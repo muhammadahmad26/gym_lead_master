@@ -20,12 +20,14 @@ class AppButton extends StatelessWidget {
         child: SizedBox(
           width: width * 0.80,
           height: height * 0.06,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(
-              child: Text(
-                text,
-                style: GoogleFonts.lexendDeca(color: Colors.white),
+          child: FittedBox(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                child: Text(
+                  text,
+                  style: GoogleFonts.lexendDeca(color: Colors.white),
+                ),
               ),
             ),
           ),

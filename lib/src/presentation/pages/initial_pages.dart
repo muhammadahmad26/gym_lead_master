@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/app_bg_page.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/app_button.dart';
+import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
+import 'package:gym_lead_master/src/presentation/widgets/app_button.dart';
 
 class InitialPages extends StatelessWidget {
   const InitialPages({super.key});
@@ -67,7 +68,19 @@ class InitialPages extends StatelessWidget {
                   ),
                 ),
               ),
-              AppButton(text: ('Gym Admin'), onPressed: () {}),
+              AppButton(
+                text: ('Gym Admin'),
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.GymAdmin);
+                },
+              ),
+              SizedBox(height: width * 0.02),
+              AppButton(
+                text: "Gym Member",
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.GymMember);
+                },
+              ),
             ],
           ),
         ),
