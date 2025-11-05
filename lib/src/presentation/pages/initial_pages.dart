@@ -71,14 +71,14 @@ class InitialPages extends StatelessWidget {
               AppButton(
                 text: ('Gym Admin'),
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.GymAdmin);
+                  Navigator.pushNamed(context, AppRoutes.gymAdmin);
                 },
               ),
               SizedBox(height: width * 0.02),
               AppButton(
                 text: "Gym Member",
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.GymMember);
+                  Navigator.pushNamed(context, AppRoutes.gymMember);
                 },
               ),
             ],

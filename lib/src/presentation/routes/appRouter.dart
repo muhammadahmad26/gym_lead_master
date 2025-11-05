@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/presentation/pages/gymAdminPage.dart';
 import 'package:gym_lead_master/src/presentation/pages/gymMemberPage.dart';
+import 'package:gym_lead_master/src/presentation/pages/initial_pages.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case AppRoutes.GymAdmin:
+      case AppRoutes.initialPage:
+        return MaterialPageRoute(builder: (_) => InitialPages());
+      case AppRoutes.gymAdmin:
         return MaterialPageRoute(builder: (_) => GymAdminPage());
-      case AppRoutes.GymMember:
+      case AppRoutes.gymMember:
         return MaterialPageRoute(builder: (_) => GymMemberPage());
+
       default:
         return MaterialPageRoute(
           builder:
