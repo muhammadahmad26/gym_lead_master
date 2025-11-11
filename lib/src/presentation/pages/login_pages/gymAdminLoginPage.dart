@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
+import 'package:gym_lead_master/src/presentation/pages/common/login_page.dart';
 
 class GymAdminLoginPage extends StatefulWidget {
   const GymAdminLoginPage({super.key});
@@ -11,6 +12,6 @@ class GymAdminLoginPage extends StatefulWidget {
 class _GymAdminLoginPageState extends State<GymAdminLoginPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: AppBackGroundPage(child: Text('Admin Login Page')));
+    return Scaffold(body: AppBackGroundPage(child: Center(child: LoginPage())));
   }
 }

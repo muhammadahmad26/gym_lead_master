@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
-import 'package:gym_lead_master/src/presentation/widgets/app_button.dart';
+import 'package:gym_lead_master/src/core/widgets/app_button.dart';
 
 class InitialPages extends StatelessWidget {
   const InitialPages({super.key});
