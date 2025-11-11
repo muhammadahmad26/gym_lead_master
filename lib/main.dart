@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gym_lead_master/src/presentation/pages/login_pages/gymAdminLoginPage.dart';
 import 'package:gym_lead_master/src/presentation/pages/initial_pages.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRouter.dart';
 
@@ -19,7 +20,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       onGenerateRoute: AppRouter.generateRoute,
-      home: InitialPages(),
+      // home: InitialPages(),
+      home: GymAdminLoginPage(),
     );
   }
 }

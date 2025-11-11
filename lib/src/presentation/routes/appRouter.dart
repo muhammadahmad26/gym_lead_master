@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gym_lead_master/src/presentation/pages/gymAdminPage.dart';
-import 'package:gym_lead_master/src/presentation/pages/gymMemberPage.dart';
+import 'package:gym_lead_master/src/presentation/pages/login_pages/gymAdminLoginPage.dart';
+import 'package:gym_lead_master/src/presentation/pages/login_pages/gymMemberLoginPage.dart';
 import 'package:gym_lead_master/src/presentation/pages/initial_pages.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
@@ -10,7 +10,7 @@ class AppRouter {
       case AppRoutes.initialPage:
         return MaterialPageRoute(builder: (_) => InitialPages());
       case AppRoutes.gymAdmin:
-        return MaterialPageRoute(builder: (_) => GymAdminPage());
+        return MaterialPageRoute(builder: (_) => GymAdminLoginPage());
       case AppRoutes.gymMember:
         return MaterialPageRoute(builder: (_) => GymMemberPage());
 
