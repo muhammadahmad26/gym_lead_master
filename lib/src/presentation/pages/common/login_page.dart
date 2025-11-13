@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/core/utils/email_validator.dart';
 import 'package:gym_lead_master/src/core/widgets/passwordField.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
@@ -7,13 +8,8 @@ import 'package:gym_lead_master/src/core/widgets/app_button.dart';
 import 'package:gym_lead_master/src/core/widgets/customTextFormField.dart';
 
 class LoginPage extends StatelessWidget {
-  final _formKey = GlobalKey<FormState>();
   LoginPage({super.key});
-
-  static const appLogoIcon = 'assets/images/app_main_logo.png';
-  static const emailIcon = 'assets/images/email.png';
-  static const keyIcon = 'assets/images/key.png';
-  static const userIcon = 'assets/images/user.png';
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
 
   @override
@@ -25,23 +21,23 @@ class LoginPage extends StatelessWidget {
         key: _formKey,
         child: Column(
           children: [
-            Image.asset(appLogoIcon, height: 100, width: 100),
+            Image.asset(AppImages.appLogoIcon, height: 100, width: 100),
             sizedBoxCustom,
             CustomTextFormField(
               controller: _emailController,
               validator: (value) => EmailValidator.validator(value),
               keyboardType: TextInputType.emailAddress,
-              icon_asset: emailIcon,
+              icon_asset: AppImages.emailIcon,
               label: "Email",
             ),
             sizedBoxCustom,
-            PasswordField(),
+            PasswordField(label: "Password"),
             sizedBoxCustom,
             AppButton(
               text: "LogIn",
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
-                  Navigator.pushNamed(context, AppRoutes.logIn);
+                  Navigator.pushNamed(context, AppRoutes.adminHomePage);
                 }
               },
             ),
@@ -63,7 +59,10 @@ class LoginPage extends StatelessWidget {
                       recognizer:
                           TapGestureRecognizer()
                             ..onTap = () {
-                              Navigator.pushNamed(context, AppRoutes.logIn);
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.signUpAdmin,
+                              );
                             },
                     ),
                   ],

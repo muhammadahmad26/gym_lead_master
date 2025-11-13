@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
+import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 import 'package:gym_lead_master/src/core/widgets/app_button.dart';
 
@@ -16,11 +17,7 @@ class InitialPages extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(
-                "assets/images/app_main_logo.png",
-                width: 100,
-                height: 100,
-              ),
+              Image.asset(AppImages.appLogoIcon, width: 100, height: 100),
               Padding(
                 padding: EdgeInsets.only(
                   left: width * 0.1,
@@ -78,7 +75,7 @@ class InitialPages extends StatelessWidget {
               AppButton(
                 text: "Gym Member",
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.gymMember);
+                  Navigator.pushNamed(context, AppRoutes.logIn);
                 },
               ),
             ],

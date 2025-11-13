@@ -36,11 +36,12 @@ class CustomTextFormField extends StatelessWidget {
         obscureText: obsecuretext,
         keyboardType: keyboardType,
         validator: validator,
-        autovalidateMode: AutovalidateMode.onUnfocus,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
           labelText: label,
+          errorMaxLines: 2,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-          errorStyle: const TextStyle(color: Colors.red, fontSize: 12,),
+          errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
           prefixIcon:
               prefixIconWidget ??
               (icon_asset != null

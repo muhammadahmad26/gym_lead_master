@@ -6,9 +6,8 @@ class GymMemberPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Text("Hi open the Member Page"),
-      ),
+      resizeToAvoidBottomInset: true,
+      body: Center(child: Text("Hi open the Member Page")),
     );
   }
 }

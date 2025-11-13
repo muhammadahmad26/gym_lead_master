@@ -12,6 +12,13 @@ class GymAdminLoginPage extends StatefulWidget {
 class _GymAdminLoginPageState extends State<GymAdminLoginPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: AppBackGroundPage(child: Center(child: LoginPage())));
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      body: AppBackGroundPage(
+        child: Center(
+          child: LoginPage()
+        ),
+      ),
+    );
   }
 }
