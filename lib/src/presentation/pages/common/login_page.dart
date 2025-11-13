@@ -5,10 +5,11 @@ import 'package:gym_lead_master/src/core/utils/email_validator.dart';
 import 'package:gym_lead_master/src/core/widgets/passwordField.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 import 'package:gym_lead_master/src/core/widgets/app_button.dart';
-import 'package:gym_lead_master/src/core/widgets/customTextFormField.dart';
+import 'package:gym_lead_master/src/core/widgets/custom_textForm_field.dart';
 
 class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+  LoginPage({super.key,required this.recognizer});
+  final GestureRecognizer recognizer;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
 
@@ -56,14 +57,14 @@ class LoginPage extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
-                      recognizer:
-                          TapGestureRecognizer()
-                            ..onTap = () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.signUpAdmin,
-                              );
-                            },
+                      recognizer:recognizer
+                          // TapGestureRecognizer()
+                          //   ..onTap = () {
+                          //     Navigator.pushNamed(
+                          //       context,
+                          //       AppRoutes.gymAdminSignUpPage,
+                          //     );
+                          //   },
                     ),
                   ],
                 ),

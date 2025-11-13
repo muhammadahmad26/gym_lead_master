@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/core/utils/password_validator.dart';
-import 'package:gym_lead_master/src/core/widgets/customTextFormField.dart';
+import 'package:gym_lead_master/src/core/widgets/custom_textForm_field.dart';
 
 class PasswordField extends StatefulWidget {
   final String label;

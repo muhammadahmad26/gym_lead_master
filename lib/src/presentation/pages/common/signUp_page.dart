@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/core/utils/email_validator.dart';
 import 'package:gym_lead_master/src/core/widgets/app_button.dart';
-import 'package:gym_lead_master/src/core/widgets/customTextFormField.dart';
+import 'package:gym_lead_master/src/core/widgets/custom_textForm_field.dart';
 import 'package:gym_lead_master/src/core/widgets/passwordField.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
@@ -22,11 +22,7 @@ class SignUpPage extends StatelessWidget {
         key: _formKey,
         child: Column(
           children: [
-            Image.asset(
-              AppImages.appLogoIcon,
-              width: 100,
-              height: 100,
-            ),
+            Image.asset(AppImages.appLogoIcon, width: 100, height: 100),
             customSizeBoxed,
             const CustomTextFormField(
               label: "Name",
@@ -85,7 +81,10 @@ class SignUpPage extends StatelessWidget {
                       recognizer:
                           TapGestureRecognizer()
                             ..onTap = () {
-                              Navigator.pushNamed(context, AppRoutes.logIn);
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.gymAdminLogInPage,
+                              );
                             },
                     ),
                   ],
