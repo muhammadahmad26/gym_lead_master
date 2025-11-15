@@ -7,4 +7,7 @@ class AppColors {
   static const greyColor = Colors.grey;
   static const blackColor = Colors.black;
   static final lightPinkColor = Colors.pink[50];
+  static const Color navBarColor = Color(0xFFEEEEEE);
+  static const Color blueColor = Color(0xFF386BF6);
+  static const Color grayColor = Color(0xFF9DB2CE);
 }
