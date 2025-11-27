@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_main_page.dart';
+import 'package:gym_lead_master/src/presentation/pages/admin_home_page/admin_main_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/signUp_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/login_pages/gym_admin_login_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/initial_pages.dart';

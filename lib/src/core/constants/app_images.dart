@@ -6,4 +6,7 @@ class AppImages {
   static const weightLiftingIcon = 'assets/images/weightlifting.png';
   static const clockIcon = 'assets/images/clock.png';
   static const locationIcon = 'assets/images/location.png';
+  static const addUser = "assets/images/add-user.png";
+   static const genderIcon = 'assets/images/gender.png';
+  static const feeIcon = 'assets/images/fee.png';
 }

@@ -1,48 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
+import 'package:gym_lead_master/src/core/constants/app_images.dart';
+import 'package:gym_lead_master/src/core/utils/email_validator.dart';
 import 'package:gym_lead_master/src/core/widgets/bottom_navigationbar_clipper.dart';
+import 'package:gym_lead_master/src/core/widgets/build_bottom_navigation_button.dart';
+import 'package:gym_lead_master/src/core/widgets/custom_textForm_field.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onItemSelected;
-  const CustomBottomNavigationBar({
+  CustomBottomNavigationBar({
     super.key,
     required this.onItemSelected,
     required this.selectedIndex,
   });
+  final GlobalKey<FormState> globalKey = GlobalKey<FormState>();
 
-  Widget _buildNavItem(
-    int index,
-    IconData icon,
-    String label,
-    Color defaultColor,
-    Color selectedColor,
-  ) {
-    bool isSelected = selectedIndex == index;
-    return InkWell(
-      onTap: () {},
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? selectedColor : defaultColor,
-              size: 24,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? selectedColor : defaultColor,
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+  Future<void> _showMyDialog(BuildContext context) async {
+    return showDialog<void>(
+      barrierDismissible: true,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add member '),
+          content: SingleChildScrollView(
+            child: Form(
+              key: globalKey,
+              child: ListBody(
+                children: <Widget>[
+                  const SizedBox(height: 5),
+                  CustomTextFormField(
+                    icon_asset: AppImages.emailIcon,
+                    label: 'Email',
+                    validator: (value) => EmailValidator.validator(value),
+                  ),
+                  const SizedBox(height: 5),
+                  const CustomTextFormField(
+                    icon_asset: AppImages.userIcon,
+                    label: 'Name',
+                    obsecuretext: true,
+                  ),
+                  //button
+                  const SizedBox(height: 5),
+                  const CustomTextFormField(
+                    icon_asset: AppImages.genderIcon,
+                    label: 'Gender',
+                  ),
+                  //button
+                  const SizedBox(height: 5),
+                  const CustomTextFormField(
+                    icon_asset: AppImages.feeIcon,
+                    label: 'fee',
+                  ),
+                ],
               ),
             ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Add'),
+              onPressed: () {
+                if (globalKey.currentState!.validate()) {
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -57,7 +82,6 @@ class CustomBottomNavigationBar extends StatelessWidget {
         children: [
           Positioned(
             bottom: 0,
-            // top: 0,
             left: 0,
             right: 0,
             child: SizedBox(
@@ -72,44 +96,69 @@ class CustomBottomNavigationBar extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Expanded(
-                          child: _buildNavItem(
-                            0,
-                            Icons.home_outlined,
-                            "Home",
-                            AppColors.grayColor,
-                            AppColors.blueColor,
+                          child: BuildBottomNavigationButton(
+                            selectedIndex: selectedIndex,
+                            onItemSelected: onItemSelected,
+                            index: 0,
+                            icon: Icons.home_outlined,
+                            label: "Home",
+                            defaultColor: AppColors.grayColor,
+                            selectedColor: AppColors.blueColor,
                           ),
                         ),
                         Expanded(
-                          child: _buildNavItem(
-                            1,
-                            Icons.payment_outlined,
-                            'Pyments',
-                            AppColors.grayColor,
-                            AppColors.blueColor,
+                          child: BuildBottomNavigationButton(
+                            selectedIndex: selectedIndex,
+                            onItemSelected: onItemSelected,
+                            index: 1,
+                            icon: Icons.payment_outlined,
+                            label: 'Pyments',
+                            defaultColor: AppColors.grayColor,
+                            selectedColor: AppColors.blueColor,
                           ),
                         ),
                         Expanded(
-                          child: _buildNavItem(
-                            2,
-                            Icons.message_outlined,
-                            'Message',
-                            AppColors.grayColor,
-                            AppColors.blueColor,
+                          child: BuildBottomNavigationButton(
+                            selectedIndex: selectedIndex,
+                            onItemSelected: onItemSelected,
+                            index: 2,
+                            icon: Icons.message_outlined,
+                            label: 'Message',
+                            defaultColor: AppColors.grayColor,
+                            selectedColor: AppColors.blueColor,
                           ),
                         ),
                         Expanded(
-                          child: _buildNavItem(
-                            3,
-                            Icons.person_outline,
-                            "Profile",
-                            AppColors.grayColor,
-                            AppColors.whiteColor,
+                          child: BuildBottomNavigationButton(
+                            selectedIndex: selectedIndex,
+                            onItemSelected: onItemSelected,
+                            index: 3,
+                            icon: Icons.person_outline,
+                            label: "Profile",
+                            defaultColor: AppColors.grayColor,
+                            selectedColor: AppColors.blueColor,
                           ),
                         ),
                       ],
                     ),
                   ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 50,
+            child: GestureDetector(
+              onTap: () {
+                _showMyDialog(context);
+              },
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: const BoxDecoration(
+                  color: Color.fromARGB(255, 122, 130, 155),
+                  shape: BoxShape.circle,
+                  image: DecorationImage(image: AssetImage(AppImages.addUser)),
                 ),
               ),
             ),
