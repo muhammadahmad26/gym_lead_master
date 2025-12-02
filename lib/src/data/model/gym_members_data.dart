@@ -18,7 +18,7 @@ class GymMembersData {
     required this.membersDoingWeightLossExercise,
   });
   GymMembersData copyWith({
-    String? TotalMembers,
+    String? totalMembers,
     String? membersDoingChestExercise,
     String? membersDoingLegExercise,
     String? membersDoingTricepsExercise,
@@ -27,7 +27,7 @@ class GymMembersData {
     String? membersDoingWeightLossExercise,
   }) {
     return GymMembersData(
-      totalMembers: TotalMembers ?? this.totalMembers,
+      totalMembers: totalMembers ?? this.totalMembers,
       membersDoingChestExercise:
           membersDoingChestExercise ?? this.membersDoingChestExercise,
       membersDoingLegExercise:
@@ -72,7 +72,7 @@ class GymMembersData {
 
   @override
   String toString() {
-    return 'GymMemebers(TotalMembers: $totalMembers, membersDoingChestExercise: $membersDoingChestExercise, membersDoingLegExercise: $membersDoingLegExercise, membersDoingTricepsExercise: $membersDoingTricepsExercise, membersDoingBicepsExercise: $membersDoingBicepsExercise, membersDoingCardioExercise: $membersDoingCardioExercise, membersDoingWeightLossExercise: $membersDoingWeightLossExercise)';
+    return 'GymMemebersData(TotalMembers: $totalMembers, membersDoingChestExercise: $membersDoingChestExercise, membersDoingLegExercise: $membersDoingLegExercise, membersDoingTricepsExercise: $membersDoingTricepsExercise, membersDoingBicepsExercise: $membersDoingBicepsExercise, membersDoingCardioExercise: $membersDoingCardioExercise, membersDoingWeightLossExercise: $membersDoingWeightLossExercise)';
   }
 
   @override
@@ -98,5 +98,4 @@ class GymMembersData {
         membersDoingCardioExercise.hashCode ^
         membersDoingWeightLossExercise.hashCode;
   }
-
 }
