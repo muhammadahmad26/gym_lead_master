@@ -4,11 +4,13 @@ import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/core/widgets/app_button.dart';
 import 'package:gym_lead_master/src/data/model/gym_members_data.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_home_page/exercise_card_group.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_home_page/live_total_members_number.dart';
+import 'package:gym_lead_master/src/presentation/pages/common/detail_live_member/exercise_card_group.dart';
+import 'package:gym_lead_master/src/presentation/pages/common/detail_live_member/live_total_members_number.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
-class AdminBody extends StatelessWidget {
-  const AdminBody({super.key});
+class HomeBody extends StatelessWidget {
+  const HomeBody({super.key, required this.isAdmin});
+  final bool isAdmin;
 
   static List<String> listImageAddress = [
     "assets/images/chest_home.png",
@@ -91,10 +93,17 @@ class AdminBody extends StatelessWidget {
                   ),
 
                   const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: AppButton(onPressed: () {}, text: "Sign in"),
-                  ),
+
+                  if (isAdmin)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: AppButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, AppRoutes.checkInPage);
+                        },
+                        text: "Check In",
+                      ),
+                    ),
 
                   const Spacer(),
                 ],

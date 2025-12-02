@@ -5,4 +5,5 @@ class AppRoutes {
   static const String gymAdminSignUpPage = "./SignUp_gym_admin";
   static const String gymMemberSignUpPage = '/gym_member';
   static const String adminHomePage = "./Admin_home_page";
+  static const String checkInPage = "./active_member_list_page";
 }

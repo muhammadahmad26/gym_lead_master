@@ -121,6 +121,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                           child: BuildBottomNavigationButton(
                             selectedIndex: selectedIndex,
                             onItemSelected: onItemSelected,
+
                             index: 2,
                             icon: Icons.message_outlined,
                             label: 'Message',

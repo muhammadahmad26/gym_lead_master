@@ -57,7 +57,11 @@ class SignUpPage extends StatelessWidget {
             AppButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
-                  Navigator.pushNamed(context, AppRoutes.initialPage);
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.initialPage,
+                    (route) => false,
+                  );
                 }
               },
               text: 'Sign Up',
@@ -81,9 +85,12 @@ class SignUpPage extends StatelessWidget {
                       recognizer:
                           TapGestureRecognizer()
                             ..onTap = () {
-                              Navigator.pushNamed(
+                              Navigator.pushNamedAndRemoveUntil(
                                 context,
                                 AppRoutes.gymAdminLogInPage,
+                                (route) =>
+                                    route.settings.name ==
+                                    AppRoutes.initialPage,
                               );
                             },
                     ),

@@ -8,7 +8,7 @@ import 'package:gym_lead_master/src/core/widgets/app_button.dart';
 import 'package:gym_lead_master/src/core/widgets/custom_textForm_field.dart';
 
 class LoginPage extends StatelessWidget {
-  LoginPage({super.key,required this.recognizer});
+  LoginPage({super.key, required this.recognizer});
   final GestureRecognizer recognizer;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -38,7 +38,11 @@ class LoginPage extends StatelessWidget {
               text: "LogIn",
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
-                  Navigator.pushNamed(context, AppRoutes.adminHomePage);
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.adminHomePage,
+                    (route) => false,
+                  );
                 }
               },
             ),
@@ -57,14 +61,7 @@ class LoginPage extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
-                      recognizer:recognizer
-                          // TapGestureRecognizer()
-                          //   ..onTap = () {
-                          //     Navigator.pushNamed(
-                          //       context,
-                          //       AppRoutes.gymAdminSignUpPage,
-                          //     );
-                          //   },
+                      recognizer: recognizer,
                     ),
                   ],
                 ),

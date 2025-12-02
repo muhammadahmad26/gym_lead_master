@@ -40,7 +40,7 @@ class BuildBottomNavigationButton extends StatelessWidget {
               style: TextStyle(
                 color: isSelected ? selectedColor : defaultColor,
                 fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],

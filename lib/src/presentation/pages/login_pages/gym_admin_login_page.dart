@@ -17,7 +17,10 @@ class GymAdminLoginPage extends StatelessWidget {
             recognizer:
                 TapGestureRecognizer()
                   ..onTap = () {
-                    Navigator.pushNamed(context, AppRoutes.gymAdminSignUpPage);
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.gymAdminSignUpPage,(route) => route.settings.name == AppRoutes.initialPage,
+                    );
                   },
           ),
         ),

@@ -9,4 +9,9 @@ class AppImages {
   static const addUser = "assets/images/add-user.png";
    static const genderIcon = 'assets/images/gender.png';
   static const feeIcon = 'assets/images/fee.png';
+  static const chest = "assets/images/chest_home.png";
+  static const leg = "assets/images/leg_home.png";
+  static const  triceps = "assets/images/triceps_home.png";
+  static const  cardio = "assets/images/cardio_home.png";
+  static const  weightloss = "assets/images/weightloss_home.png";
 }
