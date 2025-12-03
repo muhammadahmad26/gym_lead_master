@@ -14,11 +14,7 @@ class MemberModel {
     this.isHovered = false,
   });
 
-  MemberModel copyWith({
-    String? name,
-    String? workout,
-    String? time,
-  }) {
+  MemberModel copyWith({String? name, String? workout, String? time}) {
     return MemberModel(
       imagePath: imagePath,
       name: name ?? this.name,
@@ -35,8 +31,9 @@ class MemberModel {
       'time': time,
     };
   }
+
   String toJson() => json.encode(toMap());
-  
+
   factory MemberModel.fromJson(String source) =>
       MemberModel.fromMap(json.decode(source) as Map<String, dynamic>);
 
@@ -48,9 +45,6 @@ class MemberModel {
       time: map['time'] as String,
     );
   }
-
-  
-
 
   @override
   String toString() =>

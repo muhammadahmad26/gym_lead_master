@@ -32,6 +32,7 @@ class _adminHomePageState extends State<adminHomePage> {
     return Scaffold(
       body: pages[seletedIndex],
       bottomNavigationBar: CustomBottomNavigationBar(
+        isAdmin: true,
         onItemSelected: (index) {
           setState(() {
             seletedIndex = index;

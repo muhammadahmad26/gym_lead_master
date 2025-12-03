@@ -14,10 +14,16 @@ class GymMemberLogInPage extends StatelessWidget {
       body: AppBackGroundPage(
         child: Center(
           child: LoginPage(
+            
+            route: AppRoutes.memberHomePage,
             recognizer:
                 TapGestureRecognizer()
                   ..onTap = () {
-                    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.gymMemberSignUpPage,(route) => route.settings.name == AppRoutes.initialPage);
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.gymMemberSignUpPage,
+                      (route) => route.settings.name == AppRoutes.initialPage,
+                    );
                   },
           ),
         ),

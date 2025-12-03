@@ -8,11 +8,13 @@ import 'package:gym_lead_master/src/core/widgets/custom_textForm_field.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
+  final bool isAdmin;
   final Function(int) onItemSelected;
   CustomBottomNavigationBar({
     super.key,
     required this.onItemSelected,
     required this.selectedIndex,
+    this.isAdmin = false,
   });
   final GlobalKey<FormState> globalKey = GlobalKey<FormState>();
 
@@ -38,7 +40,6 @@ class CustomBottomNavigationBar extends StatelessWidget {
                   const CustomTextFormField(
                     icon_asset: AppImages.userIcon,
                     label: 'Name',
-                    obsecuretext: true,
                   ),
                   //button
                   const SizedBox(height: 5),
@@ -147,23 +148,26 @@ class CustomBottomNavigationBar extends StatelessWidget {
               ),
             ),
           ),
-          Positioned(
-            bottom: 50,
-            child: GestureDetector(
-              onTap: () {
-                _showMyDialog(context);
-              },
-              child: Container(
-                width: 30,
-                height: 30,
-                decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 122, 130, 155),
-                  shape: BoxShape.circle,
-                  image: DecorationImage(image: AssetImage(AppImages.addUser)),
+          if (isAdmin)
+            Positioned(
+              bottom: 50,
+              child: GestureDetector(
+                onTap: () {
+                  _showMyDialog(context);
+                },
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 122, 130, 155),
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: AssetImage(AppImages.addUser),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

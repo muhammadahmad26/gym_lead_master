@@ -3,7 +3,7 @@ import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/core/widgets/app_button.dart';
-import 'package:gym_lead_master/src/data/model/gym_members_data.dart';
+import 'package:gym_lead_master/src/data/gym_members_data.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/detail_live_member/exercise_card_group.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/detail_live_member/live_total_members_number.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gym_lead_master/src/data/model/gym_members_data.dart';
+import 'package:gym_lead_master/src/data/gym_members_data.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/detail_live_member/exercise_card.dart';
 
 class ExerciseCardsGroup extends StatelessWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
-import 'package:gym_lead_master/src/data/model/gym_members_data.dart';
+import 'package:gym_lead_master/src/data/gym_members_data.dart';
 
 class LiveTotalMembersNumber extends StatelessWidget {
   const LiveTotalMembersNumber({

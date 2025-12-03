@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/core/utils/email_validator.dart';
 import 'package:gym_lead_master/src/core/widgets/passwordField.dart';
-import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 import 'package:gym_lead_master/src/core/widgets/app_button.dart';
 import 'package:gym_lead_master/src/core/widgets/custom_textForm_field.dart';
 
 class LoginPage extends StatelessWidget {
-  LoginPage({super.key, required this.recognizer});
+  LoginPage({super.key, required this.recognizer, required this.route});
+  final String route;
   final GestureRecognizer recognizer;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -40,7 +40,7 @@ class LoginPage extends StatelessWidget {
                 if (_formKey.currentState!.validate()) {
                   Navigator.pushNamedAndRemoveUntil(
                     context,
-                    AppRoutes.adminHomePage,
+                    route,
                     (route) => false,
                   );
                 }

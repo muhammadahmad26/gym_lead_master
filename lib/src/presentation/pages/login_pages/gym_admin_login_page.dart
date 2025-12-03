@@ -14,12 +14,14 @@ class GymAdminLoginPage extends StatelessWidget {
       body: AppBackGroundPage(
         child: Center(
           child: LoginPage(
+            route: AppRoutes.adminHomePage,
             recognizer:
                 TapGestureRecognizer()
                   ..onTap = () {
                     Navigator.pushNamedAndRemoveUntil(
                       context,
-                      AppRoutes.gymAdminSignUpPage,(route) => route.settings.name == AppRoutes.initialPage,
+                      AppRoutes.gymAdminSignUpPage,
+                      (route) => route.settings.name == AppRoutes.initialPage,
                     );
                   },
           ),
