@@ -7,4 +7,5 @@ class AppRoutes {
   static const String adminHomePage = "./Admin_home_page";
   static const String checkInPage = "./active_member_list_page";
   static const String memberHomePage = "./member_home_page";
+  static const String chatDetailScreen = "./chat_detail_screen";
 }

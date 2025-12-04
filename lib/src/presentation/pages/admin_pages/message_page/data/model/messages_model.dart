@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/data/model/chat_message_model.dart';
+
 class MessagesModel {
   final String imagePath;
   final String name;
-  final String messageContant;
+  final List<ChatMessageModel> chatMessage;
   final String time;
 
   final bool isHoverd;
@@ -12,7 +14,7 @@ class MessagesModel {
   MessagesModel({
     required this.imagePath,
     required this.name,
-    required this.messageContant,
+    required this.chatMessage,
     required this.time,
     required this.count,
     this.isHoverd = false,
@@ -20,14 +22,14 @@ class MessagesModel {
 
   MessagesModel copyWith({
     String? name,
-    String? messageContant,
+    List<ChatMessageModel>? chatMessage,
     String? time,
     String? count,
   }) {
     return MessagesModel(
       imagePath: imagePath,
       name: name ?? this.name,
-      messageContant: messageContant ?? this.messageContant,
+      chatMessage: chatMessage ?? this.chatMessage,
       time: time ?? this.time,
       count: count ?? this.count,
     );
@@ -37,7 +39,7 @@ class MessagesModel {
     return <String, dynamic>{
       "imagePath": imagePath,
       "name": name,
-      "messageContant": messageContant,
+      "chatMessage": chatMessage,
       "time": time,
       "count": count,
     };
@@ -49,7 +51,7 @@ class MessagesModel {
     return MessagesModel(
       imagePath: map["imagePath"],
       name: map["name"] as String,
-      messageContant: map["messageContant"] as String,
+      chatMessage: map["chatMessage"],
       time: map['time'] as String,
       count: map["count"] as String,
     );
@@ -64,7 +66,7 @@ class MessagesModel {
 
     return other.imagePath == imagePath &&
         other.name == name &&
-        other.messageContant == messageContant &&
+        other.chatMessage == chatMessage &&
         other.time == time &&
         other.count == count;
   }
@@ -73,7 +75,7 @@ class MessagesModel {
   int get hashCode =>
       imagePath.hashCode ^
       name.hashCode ^
-      messageContant.hashCode ^
+      chatMessage.hashCode ^
       time.hashCode ^
       count.hashCode;
 }

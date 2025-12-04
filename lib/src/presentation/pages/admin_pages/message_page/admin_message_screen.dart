@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/message_body.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/message_screen_bar.dart';
+import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/message_screen_appBar.dart';
 
 class AdminMessageScreen extends StatefulWidget {
   const AdminMessageScreen({super.key});

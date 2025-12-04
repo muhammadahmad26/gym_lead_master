@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/chat_detail_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/data/model/messages_model.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 class MessageListTile extends StatelessWidget {
   const MessageListTile({super.key, required this.message});
@@ -14,14 +14,14 @@ class MessageListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final msg = message.chatMessage.last;
     return InkWell(
       borderRadius: BorderRadius.circular(50.0),
       onTap: () {
-        Navigator.push(
+        Navigator.pushNamed(
           context,
-          MaterialPageRoute(
-            builder: (context) => ChatDetailScreen(message: message),
-          ),
+          AppRoutes.chatDetailScreen,
+          arguments: message,
         );
       },
       child: ListTile(
@@ -36,7 +36,7 @@ class MessageListTile extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         subtitle: Text(
-          message.messageContant,
+          msg.text,
           style: TextStyle(
             fontSize: 14,
             color: AppColors.blackColor,
@@ -50,7 +50,7 @@ class MessageListTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              message.time,
+              msg.time,
               style: TextStyle(
                 color: AppColors.blackColor,
                 fontSize: 12,
@@ -63,7 +63,7 @@ class MessageListTile extends StatelessWidget {
                 margin: EdgeInsets.only(top: 4),
                 padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 44, 62, 110), // unread badge
+                  color: const Color.fromARGB(255, 44, 62, 110),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(

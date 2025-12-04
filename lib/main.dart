@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
       // home: MemeberHomePage(),
       // home: ActiveMemberListPage(),
       home: AdminMessageScreen(),
+
       // home: GymAdminLoginPage(),
       // home: GymAdminSignupPage(),
     );
