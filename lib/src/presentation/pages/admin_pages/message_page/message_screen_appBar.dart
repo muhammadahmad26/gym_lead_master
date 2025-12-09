@@ -19,7 +19,7 @@ class MessageScreenBar extends StatelessWidget {
               text: TextSpan(
                 children: [
                   TextSpan(
-                    text: "J",
+                    text: "G",
                     style: TextStyle(
                       color: Color(0xFFFFEB3B),
                       fontSize: 22,

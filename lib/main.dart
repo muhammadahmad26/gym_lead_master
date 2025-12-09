@@ -25,11 +25,10 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: AppRouter.generateRoute,
 
       // home: InitialPages(),
-      // home: adminHomePage(),
+      home: adminHomePage(),
       // home: MemeberHomePage(),
       // home: ActiveMemberListPage(),
-      home: AdminMessageScreen(),
-
+      // home: AdminMessageScreen(),
       // home: GymAdminLoginPage(),
       // home: GymAdminSignupPage(),
     );

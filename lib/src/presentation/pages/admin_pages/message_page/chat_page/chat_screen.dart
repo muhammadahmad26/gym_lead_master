@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/chat_page/chat_list.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/data/model/chat_message_model.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/data/model/messages_model.dart';
 
 class ChatDetailScreen extends StatefulWidget {

@@ -21,7 +21,6 @@ class _PasswordFieldState extends State<PasswordField> {
       controller: _passwordController,
       icon_asset: AppImages.keyIcon,
       label: widget.label,
-
       obsecuretext: _obscureText,
       validator: (value) => PasswordValidator.validator(value),
       suffixIcon: IconButton(

@@ -4,7 +4,7 @@ import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/
 
 class MessageListView extends StatelessWidget {
   final List<MessagesModel> message;
-  const MessageListView({super.key, required this.message,});
+  const MessageListView({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {

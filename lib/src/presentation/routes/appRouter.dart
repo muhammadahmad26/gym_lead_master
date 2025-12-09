@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/active_member_list_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/admin_main_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/chat_page/chat_screen.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/data/model/chat_message_model.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/data/model/messages_model.dart';
 import 'package:gym_lead_master/src/presentation/pages/login_pages/gym_admin_login_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/login_pages/gym_member_login_page.dart';

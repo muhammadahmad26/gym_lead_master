@@ -36,6 +36,7 @@ class CustomTextFormField extends StatelessWidget {
         obscureText: obsecuretext,
         keyboardType: keyboardType,
         validator: validator,
+        // onChanged: (value) => ,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
           label: FittedBox(child: Text(label)),
