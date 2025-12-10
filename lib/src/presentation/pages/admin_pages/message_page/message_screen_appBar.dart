@@ -10,7 +10,7 @@ class MessageScreenBar extends StatelessWidget {
     return AppBar(
       automaticallyImplyLeading: false,
       centerTitle: true,
-      backgroundColor: Color.fromARGB(255, 58, 67, 94),
+      backgroundColor: AppColors.DarkBlueGrey,
       title: Padding(
         padding: EdgeInsets.only(top: 5),
         child: Row(

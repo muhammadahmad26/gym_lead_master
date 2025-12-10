@@ -75,8 +75,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.whiteColor,
-      height: 80,
+      // color: AppColors.whiteColor,
+      height: 70,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.bottomCenter,

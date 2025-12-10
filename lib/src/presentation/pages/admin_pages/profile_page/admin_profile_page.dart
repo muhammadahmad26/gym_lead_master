@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
+import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
+import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/core/constants/app_padding.dart';
 import 'package:gym_lead_master/src/core/constants/app_text_size.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/profile_page/data/model/admin_profile_model.dart';
@@ -10,13 +12,11 @@ import 'package:gym_lead_master/src/presentation/pages/admin_pages/profile_page/
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/profile_page/widgets/header_section.dart';
 
 class AdminProfilePage extends StatelessWidget {
-  // --- Dummy Data ---
-  //  fetch this from a API
   final Admin admin = const Admin(
-    name: 'John Doe',
-    email: 'john.doe@admin.com',
+    name: 'muhammad Ali',
+    email: 'mali@admin.com',
     role: 'Super Admin',
-    imageUrl: 'assets/images/profile_avatar.png',
+    imageUrl: AppImages.userIcon,
   );
 
   final GymStats gymStats = const GymStats(
@@ -44,7 +44,6 @@ class AdminProfilePage extends StatelessWidget {
   AdminProfilePage({super.key});
 
   void _handleLogout(BuildContext context) {
-    // Show a confirmation dialog
     showDialog(
       context: context,
       builder:
@@ -58,15 +57,14 @@ class AdminProfilePage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.of(ctx).pop(); // Close dialog
-                  // In a real app, you would clear user session and navigate to login screen
+                  Navigator.of(ctx).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Logging out...')),
                   );
                 },
                 child: const Text(
                   'Logout',
-                  style: TextStyle(color: AppColors.accent),
+                  style: TextStyle(color: AppColors.blueColor),
                 ),
               ),
             ],
@@ -77,7 +75,7 @@ class AdminProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.whiteColor,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,7 +145,7 @@ class AdminProfilePage extends StatelessWidget {
           icon: const Icon(Icons.logout, color: Colors.white),
           label: const Text('Logout', style: TextStyle(color: Colors.white)),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.accent,
+            backgroundColor: AppColors.blueColor,
             minimumSize: const Size(double.infinity, 50),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),

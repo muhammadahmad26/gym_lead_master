@@ -13,7 +13,7 @@ class adminHomePage extends StatefulWidget {
 }
 
 class _adminHomePageState extends State<adminHomePage> {
-  int seletedIndex = 0;
+  int seletedIndex = 3;
   final List<Widget> pages = [
     HomeBody(isAdmin: true),
     AdminPymentPage(),

@@ -22,9 +22,9 @@ class CustomListTile extends StatelessWidget {
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: ListTile(
-        leading: Icon(item.icon, color: AppColors.primary),
+        leading: Icon(item.icon, color: AppColors.DarkBlueGrey),
         title: Text(item.title, style: AppTextStyles.bodyLarge),
-        trailing: const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant),
+        trailing: const Icon(Icons.chevron_right, color: AppColors.Lightertext),
         onTap: onTap,
       ),
     );

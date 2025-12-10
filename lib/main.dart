@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/active_member_list_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/admin_main_page.dart';
@@ -6,7 +7,9 @@ import 'package:gym_lead_master/src/presentation/pages/initial_pages.dart';
 import 'package:gym_lead_master/src/presentation/pages/member_pages/member_home_page.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRouter.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -26,6 +29,7 @@ class MyApp extends StatelessWidget {
 
       // home: InitialPages(),
       home: adminHomePage(),
+
       // home: MemeberHomePage(),
       // home: ActiveMemberListPage(),
       // home: AdminMessageScreen(),

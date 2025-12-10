@@ -18,6 +18,7 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
         preferredSize: Size.fromHeight(70.0),
         child: const MessageScreenBar(),
       ),
+
       body: AppBackGroundPage(child: MessageBody()),
     );
   }

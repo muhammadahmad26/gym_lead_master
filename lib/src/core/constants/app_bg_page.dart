@@ -13,7 +13,10 @@ class AppBackGroundPage extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.themeBlueColor,
+            AppColors.darkBlue,
+            AppColors.mediumBlue,
+            AppColors.lightBlue,
+
             AppColors.lightBlueColor,
             AppColors.whiteColor,
           ],

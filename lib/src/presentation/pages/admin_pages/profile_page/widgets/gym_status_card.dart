@@ -35,7 +35,7 @@ class GymStatsCard extends StatelessWidget {
       children: [
         Text(
           value,
-          style: AppTextStyles.headlineMedium.copyWith(color: AppColors.secondary),
+          style: AppTextStyles.headlineMedium.copyWith(color: AppColors.BrightBlue),
         ),
         const SizedBox(height: 4),
         Text(
