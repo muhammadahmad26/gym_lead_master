@@ -10,6 +10,9 @@ import 'package:gym_lead_master/src/presentation/pages/admin_pages/profile_page/
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/profile_page/widgets/custom_list_tile.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/profile_page/widgets/gym_status_card.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/profile_page/widgets/header_section.dart';
+import 'package:gym_lead_master/src/presentation/pages/initial_pages.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRouter.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 class AdminProfilePage extends StatelessWidget {
   final Admin admin = const Admin(
@@ -57,7 +60,10 @@ class AdminProfilePage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.of(ctx).pop();
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => InitialPages()),
+                    (route) => false,
+                  );
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Logging out...')),
                   );
@@ -75,12 +81,16 @@ class AdminProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(90),
+        child: HeaderSection(admin: admin),
+      ),
       backgroundColor: AppColors.whiteColor,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            HeaderSection(admin: admin),
+            // HeaderSection(admin: admin),
             const SizedBox(height: AppPaddings.large),
             GymStatsCard(stats: gymStats),
             const SizedBox(height: AppPaddings.large),

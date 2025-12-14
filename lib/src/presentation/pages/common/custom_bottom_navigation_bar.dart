@@ -19,12 +19,12 @@ class CustomBottomNavigationBar extends StatelessWidget {
   final GlobalKey<FormState> globalKey = GlobalKey<FormState>();
 
   Future<void> _showMyDialog(BuildContext context) async {
-    return showDialog<void>(
+    return await showDialog<void>(
       barrierDismissible: true,
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Add member '),
+          title: const Text('Add New member '),
           content: SingleChildScrollView(
             child: Form(
               key: globalKey,
@@ -74,9 +74,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // color: AppColors.whiteColor,
-      height: 70,
+    return SizedBox(
+      height: 67,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.bottomCenter,
@@ -86,11 +85,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
             left: 0,
             right: 0,
             child: SizedBox(
-              height: 70,
               child: ClipPath(
-                clipper: BottomNavigationbarClipper(),
+                clipper: NotchedBottomNavigationBarClipper(),
                 child: Container(
-                  color: AppColors.navBarColor,
+                  color: AppColors.DarkBlueGrey,
                   child: Padding(
                     padding: EdgeInsets.only(top: 20),
                     child: Row(
@@ -150,16 +148,16 @@ class CustomBottomNavigationBar extends StatelessWidget {
           ),
           if (isAdmin)
             Positioned(
-              bottom: 50,
+              bottom: 40,
               child: GestureDetector(
                 onTap: () {
                   _showMyDialog(context);
                 },
                 child: Container(
-                  width: 30,
-                  height: 30,
+                  width: 50,
+                  height: 50,
                   decoration: const BoxDecoration(
-                    color: Color.fromARGB(255, 122, 130, 155),
+                    color: AppColors.Darktext,
                     shape: BoxShape.circle,
                     image: DecorationImage(
                       image: AssetImage(AppImages.addUser),

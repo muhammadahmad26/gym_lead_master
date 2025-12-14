@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_lead_master/firebase_options.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/active_member_list_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/admin_main_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/admin_message_screen.dart';
@@ -9,7 +10,8 @@ import 'package:gym_lead_master/src/presentation/routes/appRouter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(const MyApp());
 }
 
@@ -29,7 +31,6 @@ class MyApp extends StatelessWidget {
 
       // home: InitialPages(),
       home: adminHomePage(),
-
       // home: MemeberHomePage(),
       // home: ActiveMemberListPage(),
       // home: AdminMessageScreen(),

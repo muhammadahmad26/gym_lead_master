@@ -55,10 +55,10 @@ class InitialPages extends StatelessWidget {
                       shadows: const [
                         Shadow(
                           color: AppColors.whiteColor,
-                          offset: Offset(1, 1),
+                          // offset: Offset(1, 1),
                         ),
                       ],
-                      color: AppColors.themeBlueColor,
+                      color: AppColors.whiteColor,
                       fontWeight: FontWeight.bold,
                       fontSize: width * 0.05,
                     ),

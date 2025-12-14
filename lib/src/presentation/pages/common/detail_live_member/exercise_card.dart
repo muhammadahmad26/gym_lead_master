@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
+import 'package:gym_lead_master/src/core/constants/app_text_size.dart';
 
 class ExerciseCard extends StatelessWidget {
   final String imagePath;
@@ -18,11 +19,9 @@ class ExerciseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(
-        left: 8,
-      ),
+      padding: const EdgeInsets.only(left: 8),
       decoration: BoxDecoration(
-        color: AppColors.whiteColor,
+        color: AppColors.lightBlue,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -30,32 +29,27 @@ class ExerciseCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.lightPinkColor,
+              color: AppColors.lightBlueColor,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Image.asset(imagePath, width: 30, height: 20),
           ),
-          // const SizedBox(width: 8),
+
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // SizedBox(
-              // width: 70,
-              // height: 40,
-              // child:
               Padding(
                 padding: const EdgeInsets.only(left: 5.0),
                 child: Text(
                   nameOfExercise,
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.greyColor,
+                    fontSize: 14,
+                    color: AppColors.lightBlueColor,
                   ),
                 ),
               ),
-              // ),
+
               Padding(
                 padding: const EdgeInsets.only(left: 5.0),
                 child: Row(
@@ -65,8 +59,7 @@ class ExerciseCard extends StatelessWidget {
                     Text(
                       memberDoingExercise,
                       style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
                         color: AppColors.blackColor,
                       ),
                     ),
@@ -75,7 +68,7 @@ class ExerciseCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.themeBlueColor,
+                        color: AppColors.veryLightBlue,
                       ),
                     ),
                   ],

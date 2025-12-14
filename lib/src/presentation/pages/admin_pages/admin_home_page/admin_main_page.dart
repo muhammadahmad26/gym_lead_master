@@ -13,7 +13,7 @@ class adminHomePage extends StatefulWidget {
 }
 
 class _adminHomePageState extends State<adminHomePage> {
-  int seletedIndex = 3;
+  int seletedIndex = 0;
   final List<Widget> pages = [
     HomeBody(isAdmin: true),
     AdminPymentPage(),
@@ -29,16 +29,18 @@ class _adminHomePageState extends State<adminHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: pages[seletedIndex],
-      bottomNavigationBar: CustomBottomNavigationBar(
-        isAdmin: true,
-        onItemSelected: (index) {
-          setState(() {
-            seletedIndex = index;
-          });
-        },
-        selectedIndex: seletedIndex,
+    return SafeArea(
+      child: Scaffold(
+        body: pages[seletedIndex],
+        bottomNavigationBar: CustomBottomNavigationBar(
+          isAdmin: true,
+          onItemSelected: (index) {
+            setState(() {
+              seletedIndex = index;
+            });
+          },
+          selectedIndex: seletedIndex,
+        ),
       ),
     );
   }

@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "519586113502",
+    "firebase_url": "https://gym-lead-master-app-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "gym-lead-master-app",
+    "storage_bucket": "gym-lead-master-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:519586113502:android:202e4955b9257df94f9f4f",
+        "android_client_info": {
+          "package_name": "com.example.gym_lead_master"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDy1wDGEHlro5blEkG7OVR-iWLzblh7INM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

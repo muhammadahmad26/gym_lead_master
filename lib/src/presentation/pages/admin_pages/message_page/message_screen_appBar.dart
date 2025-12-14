@@ -11,6 +11,7 @@ class MessageScreenBar extends StatelessWidget {
       automaticallyImplyLeading: false,
       centerTitle: true,
       backgroundColor: AppColors.DarkBlueGrey,
+      elevation: 0,
       title: Padding(
         padding: EdgeInsets.only(top: 5),
         child: Row(
