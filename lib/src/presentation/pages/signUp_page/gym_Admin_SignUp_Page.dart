@@ -11,12 +11,11 @@ class GymAdminSignupPage extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: AppBackGroundPage(
-        child: Center(child: SignUpPage(
+        child: SignUpPage(
           route: AppRoutes.gymAdminLogInPage,
           recognizer: AppRoutes.gymAdminLogInPage,
-        )),
+        ),
       ),
     );
   }
 }
-

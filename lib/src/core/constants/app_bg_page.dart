@@ -7,22 +7,28 @@ class AppBackGroundPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.darkBlue,
-            AppColors.mediumBlue,
-            AppColors.lightBlue,
+    final Size size = MediaQuery.sizeOf(context);
+    return SizedBox(
+      width: size.width,
+      height: size.height,
 
-            AppColors.lightBlueColor,
-            AppColors.whiteColor,
-          ],
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.darkBlue,
+              AppColors.mediumBlue,
+              AppColors.lightBlue,
+
+              Color.fromARGB(255, 150, 179, 218),
+              Color.fromARGB(255, 198, 218, 245),
+            ],
+          ),
         ),
+        child: child,
       ),
-      child: child,
     );
   }
 }

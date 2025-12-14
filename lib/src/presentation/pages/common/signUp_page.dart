@@ -38,7 +38,7 @@ class _SignUpPageState extends State<SignUpPage> {
         password: _passwordController.text.trim(),
       );
       await FirebaseAuth.instance.signOut();
-      
+
       Navigator.pushNamedAndRemoveUntil(
         context,
         widget.route,
@@ -75,95 +75,178 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     var Size(:width, :height) = MediaQuery.sizeOf(context);
     final SizedBox customSizeBoxed = SizedBox(height: height * 0.02);
-    return SingleChildScrollView(
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            Image.asset(AppImages.appLogoIcon, width: 100, height: 100),
-            customSizeBoxed,
-            const CustomTextFormField(
-              label: "Name",
-              icon_asset: AppImages.weightLiftingIcon,
-              keyboardType: TextInputType.name,
-              // controller: TextEditingController(),
-            ),
-            customSizeBoxed,
-            CustomTextFormField(
-              validator: (value) => EmailValidator.validator(value),
-              controller: _emailController,
+    return Stack(
+      children: [
+        AbsorbPointer(
+          absorbing: isLoading,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: width * 0.05),
+              child: Column(
+                children: [
+                  SizedBox(height: height * 0.05),
+                  Image.asset(
+                    AppImages.appLogoIcon,
+                    width: width * 0.4,
+                    height: height * 0.2,
+                  ),
+                  SizedBox(height: height * 0.01),
 
-              icon_asset: AppImages.emailIcon,
-              label: 'Email',
-              keyboardType: TextInputType.emailAddress,
-            ),
-            customSizeBoxed,
-            PasswordField(
-              label: "password",
-              validator: (value) => PasswordValidator.validator(value),
-              controller: _passwordController,
-            ),
-            customSizeBoxed,
-            PasswordField(
-              controller: _confirmPasswordController,
-              validator:
-                  (Value) =>
-                      Value != _passwordController.text
-                          ? "Passwords do not match"
-                          : null,
-              label: "Confirm Password",
-            ),
-            customSizeBoxed,
-
-            customSizeBoxed,
-            const CustomTextFormField(
-              label: "Location",
-              icon_asset: AppImages.locationIcon,
-            ),
-            customSizeBoxed,
-            AppButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _signUp(context);
-                }
-              },
-              text: 'Sign Up',
-            ),
-            customSizeBoxed,
-            // SizedBox(height: height * 0.01),
-            Padding(
-              padding: const EdgeInsets.only(left: 15),
-              child: RichText(
-                text: TextSpan(
-                  text: "Already have an account? ",
-                  style: const TextStyle(color: Colors.black, fontSize: 14),
-                  children: [
-                    TextSpan(
-                      text: 'Login',
-                      style: TextStyle(
-                        color: Colors.blueAccent.shade700,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                      recognizer:
-                          TapGestureRecognizer()
-                            ..onTap = () {
-                              Navigator.pushNamedAndRemoveUntil(
-                                context,
-                                widget.recognizer,
-                                (route) =>
-                                    route.settings.name ==
-                                    AppRoutes.initialPage,
-                              );
-                            },
+                  Container(
+                    margin: EdgeInsets.only(bottom: height * 0.05),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: width * 0.05,
+                      vertical: height * 0.03,
                     ),
-                  ],
-                ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color.fromARGB(
+                            255,
+                            104,
+                            119,
+                            126,
+                          ).withOpacity(0.2),
+                          const Color.fromARGB(
+                            255,
+                            176,
+                            196,
+                            222,
+                          ).withOpacity(0.2),
+                          const Color.fromARGB(
+                            255,
+                            255,
+                            255,
+                            255,
+                          ).withOpacity(0.2),
+                          const Color.fromARGB(
+                            255,
+                            255,
+                            255,
+                            255,
+                          ).withOpacity(0.2),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      border: Border.all(color: Colors.grey.shade300, width: 1),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          Text(
+                            'Sign Up',
+                            style: const TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: height * 0.03),
+                          const CustomTextFormField(
+                            label: "Name",
+                            icon_asset: AppImages.weightLiftingIcon,
+                            keyboardType: TextInputType.name,
+                            // controller: TextEditingController(),
+                          ),
+                          customSizeBoxed,
+                          CustomTextFormField(
+                            validator:
+                                (value) => EmailValidator.validator(value),
+                            controller: _emailController,
+
+                            icon_asset: AppImages.emailIcon,
+                            label: 'Email',
+                            keyboardType: TextInputType.emailAddress,
+                          ),
+                          customSizeBoxed,
+                          PasswordField(
+                            label: "password",
+                            validator:
+                                (value) => PasswordValidator.validator(value),
+                            controller: _passwordController,
+                          ),
+                          customSizeBoxed,
+                          PasswordField(
+                            controller: _confirmPasswordController,
+                            validator:
+                                (Value) =>
+                                    Value != _passwordController.text
+                                        ? "Passwords do not match"
+                                        : null,
+                            label: "Confirm Password",
+                          ),
+                          customSizeBoxed,
+
+                          const CustomTextFormField(
+                            label: "Location",
+                            icon_asset: AppImages.locationIcon,
+                          ),
+                          customSizeBoxed,
+                          isLoading
+                              ? const CircularProgressIndicator()
+                              : AppButton(
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    _signUp(context);
+                                  }
+                                },
+                                text: 'Sign Up',
+                              ),
+                          customSizeBoxed,
+
+                          Padding(
+                            padding: const EdgeInsets.only(left: 15),
+                            child: RichText(
+                              text: TextSpan(
+                                text: "Already have an account? ",
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: 'Login',
+                                    style: TextStyle(
+                                      color: Colors.blueAccent.shade700,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                    recognizer:
+                                        TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Navigator.pushNamedAndRemoveUntil(
+                                              context,
+                                              widget.recognizer,
+                                              (route) =>
+                                                  route.settings.name ==
+                                                  AppRoutes.initialPage,
+                                            );
+                                          },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

@@ -29,7 +29,7 @@ class CustomTextFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     var Size(:width, :height) = MediaQuery.sizeOf(context);
     return SizedBox(
-      width: width * 0.8,
+      width: width * 0.9,
       height: height * 0.07,
       child: TextFormField(
         controller: controller,
@@ -39,10 +39,15 @@ class CustomTextFormField extends StatelessWidget {
         // onChanged: (value) => ,
         // autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
-          label: FittedBox(child: Text(label)),
+          label: FittedBox(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 16, color: Colors.black),
+            ),
+          ),
           errorMaxLines: 2,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-          errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          errorStyle: const TextStyle(color: Colors.red, fontSize: 10),
           prefixIcon:
               prefixIconWidget ??
               (icon_asset != null
