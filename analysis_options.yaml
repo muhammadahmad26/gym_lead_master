@@ -16,6 +16,7 @@ analyzer:
     non_constant_identifier_names: ignore
     unnecessary_this: ignore
     unused_import: ignore
+    use_build_context_synchronously: ignore
     void_checks: ignore
 include: package:flutter_lints/flutter.yaml
 

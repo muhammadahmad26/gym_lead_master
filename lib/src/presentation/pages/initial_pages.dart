@@ -30,10 +30,7 @@ class InitialPages extends StatelessWidget {
                     "Stay Fit, Stay Organized",
                     style: TextStyle(
                       shadows: const [
-                        Shadow(
-                          color: AppColors.greyColor,
-                          offset: Offset(1, 4),
-                        ),
+                        Shadow(color: AppColors.greyColor, blurRadius: 4),
                       ],
                       color: AppColors.whiteColor,
                       fontWeight: FontWeight.bold,
@@ -52,14 +49,8 @@ class InitialPages extends StatelessWidget {
                   child: Text(
                     'Helping Gym run smarter & memeber stay on track',
                     style: TextStyle(
-                      shadows: const [
-                        Shadow(
-                          color: AppColors.whiteColor,
-                          // offset: Offset(1, 1),
-                        ),
-                      ],
                       color: AppColors.whiteColor,
-                      fontWeight: FontWeight.bold,
+                      // fontWeight: FontWeight.bold,
                       fontSize: width * 0.05,
                     ),
                   ),

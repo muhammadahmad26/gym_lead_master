@@ -1,17 +1,75 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/core/utils/email_validator.dart';
+import 'package:gym_lead_master/src/core/utils/password_validator.dart';
 import 'package:gym_lead_master/src/core/widgets/app_button.dart';
 import 'package:gym_lead_master/src/core/widgets/custom_textForm_field.dart';
 import 'package:gym_lead_master/src/core/widgets/passwordField.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
-class SignUpPage extends StatelessWidget {
-  SignUpPage({super.key});
+class SignUpPage extends StatefulWidget {
+  final String recognizer;
+  final String route;
+  const SignUpPage({super.key, required this.recognizer, required this.route});
+
+  @override
+  State<SignUpPage> createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
 
-  final _emailController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+
+  final TextEditingController _passwordController = TextEditingController();
+
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  bool isLoading = false;
+  Future<void> _signUp(BuildContext context) async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      await FirebaseAuth.instance.signOut();
+      
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        widget.route,
+        (route) => false,
+      );
+    } on FirebaseAuthException catch (e) {
+      String message;
+      if (e.code == 'email-already-in-use') {
+        message = 'The account already exists for that email.';
+      } else if (e.code == 'weak-password') {
+        message = 'The password provided is too weak.';
+      } else {
+        message = e.message ?? 'Sign up failed. Please try again.';
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +98,23 @@ class SignUpPage extends StatelessWidget {
               keyboardType: TextInputType.emailAddress,
             ),
             customSizeBoxed,
-            const PasswordField(label: "password"),
-            customSizeBoxed,
-            const PasswordField(label: "Confirm Password"),
-            customSizeBoxed,
-            const CustomTextFormField(
-              label: "Time Of Gym",
-              icon_asset: AppImages.clockIcon,
+            PasswordField(
+              label: "password",
+              validator: (value) => PasswordValidator.validator(value),
+              controller: _passwordController,
             ),
+            customSizeBoxed,
+            PasswordField(
+              controller: _confirmPasswordController,
+              validator:
+                  (Value) =>
+                      Value != _passwordController.text
+                          ? "Passwords do not match"
+                          : null,
+              label: "Confirm Password",
+            ),
+            customSizeBoxed,
+
             customSizeBoxed,
             const CustomTextFormField(
               label: "Location",
@@ -57,11 +124,7 @@ class SignUpPage extends StatelessWidget {
             AppButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    AppRoutes.initialPage,
-                    (route) => false,
-                  );
+                  _signUp(context);
                 }
               },
               text: 'Sign Up',
@@ -87,7 +150,7 @@ class SignUpPage extends StatelessWidget {
                             ..onTap = () {
                               Navigator.pushNamedAndRemoveUntil(
                                 context,
-                                AppRoutes.gymAdminLogInPage,
+                                widget.recognizer,
                                 (route) =>
                                     route.settings.name ==
                                     AppRoutes.initialPage,
