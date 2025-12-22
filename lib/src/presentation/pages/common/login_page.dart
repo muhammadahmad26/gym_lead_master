@@ -159,6 +159,26 @@ class _LoginPageState extends State<LoginPage> {
                             validator:
                                 (value) => PasswordValidator.validator(value),
                           ),
+
+                          // sizedBoxCustom,
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {
+                                // Implement forgot password functionality
+                              },
+                              child: Text(
+                                'Forgot Password?',
+                                style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Color(0xFF1976D2),
+                                  color: Colors.blueAccent.shade700,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+
                           sizedBoxCustom,
                           isLoading
                               ? const CircularProgressIndicator()
