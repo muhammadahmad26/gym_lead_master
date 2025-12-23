@@ -5,6 +5,15 @@ import 'package:gym_lead_master/src/core/constants/app_padding.dart';
 import 'package:gym_lead_master/src/core/constants/app_text_size.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/profile_page/data/model/list_items_model.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/profile_page/widgets/custom_list_tile.dart';
+import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/available_plan_card.dart';
+import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/data/model/member_detail.dart';
+import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/data/model/payment_summary.dart';
+import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/data/model/plan.dart';
+import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/data/model/transaction.dart';
+import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/payment_header.dart';
+import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/payment_method.dart';
+import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/payment_summary_card.dart';
+import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/transaction_history_tile.dart';
 
 class MemberPaymentScreen extends StatefulWidget {
   final Member member;
@@ -64,7 +73,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen> {
             onPressed: () {
               Navigator.of(ctx).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Payment Successful!'), backgroundColor: AppColor.successGreen),
+                const SnackBar(content: Text('Payment Successful!'), backgroundColor: AppColors.successGreen),
               );
             },
             child: const Text('Pay Now'),

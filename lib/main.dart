@@ -8,6 +8,8 @@ import 'package:gym_lead_master/src/presentation/pages/common/forget_password_pa
 import 'package:gym_lead_master/src/presentation/pages/common/login_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/initial_pages.dart';
 import 'package:gym_lead_master/src/presentation/pages/member_pages/member_home_page/member_home_page.dart';
+import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/data/member_dummy_trainstion_data/member_dummy_data.dart';
+import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/member_payment_page.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRouter.dart';
 
 void main() async {
@@ -40,7 +42,7 @@ class MyApp extends StatelessWidget {
       // home: GymAdminSignupPage(),
       // home: InitialPages(),
       // home: ForgetPasswordPage(),
-      home: pay,
+      home: MemberPaymentScreen(member: dummyMembers[0]),
     );
   }
 }
