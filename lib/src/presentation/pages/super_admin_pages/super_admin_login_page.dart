@@ -103,10 +103,30 @@ class _SuperAdminLoginPageState extends State<SuperAdminLoginPage> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color.fromARGB(255, 104, 119, 126).withOpacity(0.2),
-                        const Color.fromARGB(255, 176, 196, 222).withOpacity(0.2),
-                        const Color.fromARGB(255, 255, 255, 255).withOpacity(0.2),
-                        const Color.fromARGB(255, 255, 255, 255).withOpacity(0.2),
+                        const Color.fromARGB(
+                          255,
+                          104,
+                          119,
+                          126,
+                        ).withOpacity(0.2),
+                        const Color.fromARGB(
+                          255,
+                          176,
+                          196,
+                          222,
+                        ).withOpacity(0.2),
+                        const Color.fromARGB(
+                          255,
+                          255,
+                          255,
+                          255,
+                        ).withOpacity(0.2),
+                        const Color.fromARGB(
+                          255,
+                          255,
+                          255,
+                          255,
+                        ).withOpacity(0.2),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -141,15 +161,15 @@ class _SuperAdminLoginPageState extends State<SuperAdminLoginPage> {
                           validator: (value) => EmailValidator.validator(value),
                           keyboardType: TextInputType.emailAddress,
                           icon_asset: AppImages.emailIcon,
-                          label: "Email", 
-                          obsecuretext: true,
+                          label: "Email",
                         ),
                         sizedBoxCustom,
 
                         PasswordField(
                           controller: _passwordController,
                           label: "Password",
-                          validator: (value) => PasswordValidator.validator(value),
+                          validator:
+                              (value) => PasswordValidator.validator(value),
                         ),
                         sizedBoxCustom,
 
@@ -163,7 +183,6 @@ class _SuperAdminLoginPageState extends State<SuperAdminLoginPage> {
                           },
                           icon_asset: AppImages.keyIcon,
                           label: "Secret Key",
-                          obsecuretext: true,
                         ),
                         sizedBoxCustom,
 
@@ -188,9 +207,9 @@ class _SuperAdminLoginPageState extends State<SuperAdminLoginPage> {
                         _isLoading
                             ? const CircularProgressIndicator()
                             : AppButton(
-                                text: "Login as Super Admin",
-                                onPressed: () => _login(context),
-                              ),
+                              text: "Login as Super Admin",
+                              onPressed: () => _login(context),
+                            ),
                       ],
                     ),
                   ),

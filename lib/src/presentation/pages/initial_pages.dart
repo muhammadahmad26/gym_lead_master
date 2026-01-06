@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart'; // kDebugMode 
+import 'package:flutter/foundation.dart'; // kDebugMode
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
@@ -6,14 +6,14 @@ import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 import 'package:gym_lead_master/src/core/widgets/app_button.dart';
 
-import 'package:gym_lead_master/main.dart'; 
+import 'package:gym_lead_master/main.dart';
 
 class InitialPages extends StatelessWidget {
   const InitialPages({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // MediaQuery 
+    // MediaQuery
     final Size size = MediaQuery.sizeOf(context);
     final double width = size.width;
 
@@ -28,7 +28,7 @@ class InitialPages extends StatelessWidget {
                 children: [
                   // Logo
                   Image.asset(AppImages.appLogoIcon, width: 100, height: 100),
-                  
+
                   // Main Heading
                   Padding(
                     padding: EdgeInsets.only(
@@ -84,7 +84,10 @@ class InitialPages extends StatelessWidget {
                   AppButton(
                     text: "Gym Member",
                     onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.gymMemberLoginPage);
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.gymMemberLoginPage,
+                      );
                     },
                   ),
 
@@ -94,7 +97,10 @@ class InitialPages extends StatelessWidget {
                   AppButton(
                     text: "Super Admin",
                     onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.superAdminLoginPage);
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.superAdminLoginPage,
+                      );
                     },
                   ),
                 ],
@@ -109,7 +115,8 @@ class InitialPages extends StatelessWidget {
                 right: 0,
                 child: Center(
                   child: GestureDetector(
-                    onDoubleTap: () async { // Double tap par rakha hai mazeed safety ke liye
+                    onDoubleTap: () async {
+                      // Double tap par rakha hai mazeed safety ke liye
                       await setupSuperAdmin();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -121,7 +128,12 @@ class InitialPages extends StatelessWidget {
                     child: Text(
                       "DEV: Double-tap to setup system",
                       style: TextStyle(
-                        color: AppColors.whiteColor.withOpacity(0.2), // Bohat halka dikhega
+                        color: const Color.fromARGB(
+                          255,
+                          22,
+                          13,
+                          13,
+                        ).withOpacity(0.2), // Bohat halka dikhega
                         fontSize: 10,
                         letterSpacing: 1.2,
                       ),

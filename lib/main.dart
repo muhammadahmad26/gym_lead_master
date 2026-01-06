@@ -66,7 +66,7 @@ Future<void> connectToFirebaseEmulator() async {
       if (androidInfo.isPhysicalDevice) {
         // *IMPORTANT*: Yahan apna laptop ka IP address likho
         // Kyunke real phone ko laptop ka pata nahi hota
-        host = '192.168.1.21';
+        host = '192.168.1.40';
       } else {
         // Android Emulator ka internal address
         host = '10.0.2.2';
@@ -76,8 +76,9 @@ Future<void> connectToFirebaseEmulator() async {
 
   // Ab sab services ko connect karo
   try {
-    FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
     await FirebaseAuth.instance.useAuthEmulator(host, 9099);
+    FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
+
     await FirebaseStorage.instance.useStorageEmulator(host, 9199);
     print("Connected to Firebase Emulator on: $host");
   } catch (e) {
@@ -92,7 +93,7 @@ Future<void> setupSuperAdmin() async {
 
   try {
     await superAdminService.initializeSuperAdmin(
-      email: 'superadmin@yourcompany.com',
+      email: 'superadmin@email.com',
       password: 'SuperSecure@123',
       name: 'Master Administrator',
     );
