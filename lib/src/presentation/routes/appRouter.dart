@@ -9,6 +9,8 @@ import 'package:gym_lead_master/src/presentation/pages/initial_pages.dart';
 import 'package:gym_lead_master/src/presentation/pages/member_pages/member_home_page/member_home_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/signUp_page/gym_Admin_signUp_Page.dart';
 import 'package:gym_lead_master/src/presentation/pages/signUp_page/gym_member_sigUp_page.dart';
+import 'package:gym_lead_master/src/presentation/pages/super_admin_pages/super_admin_dashboard.dart';
+import 'package:gym_lead_master/src/presentation/pages/super_admin_pages/super_admin_login_page.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 class AppRouter {
@@ -16,6 +18,14 @@ class AppRouter {
     switch (settings.name) {
       case AppRoutes.initialPage:
         return MaterialPageRoute(builder: (_) => InitialPages());
+      //  ------------------------- // 
+      case AppRoutes.superAdminLoginPage:
+        return MaterialPageRoute(builder: (_) => SuperAdminLoginPage());
+
+      case AppRoutes.superAdminDashboard:
+        return MaterialPageRoute(builder: (_) => SuperAdminDashboard());
+
+      //  ------------------------- //
       case AppRoutes.gymAdminLogInPage:
         return MaterialPageRoute(builder: (_) => GymAdminLoginPage());
       case AppRoutes.gymMemberLoginPage:
