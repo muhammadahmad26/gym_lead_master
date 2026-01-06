@@ -10,11 +10,25 @@ import 'package:gym_lead_master/src/presentation/pages/initial_pages.dart';
 import 'package:gym_lead_master/src/presentation/pages/member_pages/member_home_page/member_home_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/data/member_dummy_trainstion_data/member_dummy_data.dart';
 import 'package:gym_lead_master/src/presentation/pages/member_pages/member_payment_page/member_payment_page.dart';
+import 'package:gym_lead_master/src/presentation/pages/super_admin_pages/data/services/super_admin_service.dart';
+
 import 'package:gym_lead_master/src/presentation/routes/appRouter.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  if (kDebugMode) {
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: false,
+    );
+    await connectToFirebaseEmulator();
+  }
 
   runApp(const MyApp());
 }
@@ -33,16 +47,57 @@ class MyApp extends StatelessWidget {
       ),
       onGenerateRoute: AppRouter.generateRoute,
 
-      // home: InitialPages(),
-      // home: adminHomePage(),
-      // home: MemeberHomePage(),
-      // home: ActiveMemberListPage(), hello
-      // home: AdminMessageScreen(),
-      // home: GymAdminLoginPage(),
-      // home: GymAdminSignupPage(),
-      // home: InitialPages(),
-      // home: ForgetPasswordPage(),
-      home: MemberPaymentScreen(member: dummyMembers[0]),
+      home: InitialPages(),
+      // home: SuperAdminDashboard(),
     );
+  }
+}
+
+//---Connect to Firebase Emulators for Firestore, Auth, and Storage--//
+
+Future<void> connectToFirebaseEmulator() async {
+  String host = 'localhost'; // Default for iOS Simulator & Web
+
+  if (!kIsWeb) {
+    if (Platform.isAndroid) {
+      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+
+      if (androidInfo.isPhysicalDevice) {
+        // *IMPORTANT*: Yahan apna laptop ka IP address likho
+        // Kyunke real phone ko laptop ka pata nahi hota
+        host = '192.168.1.21';
+      } else {
+        // Android Emulator ka internal address
+        host = '10.0.2.2';
+      }
+    }
+  }
+
+  // Ab sab services ko connect karo
+  try {
+    FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
+    await FirebaseAuth.instance.useAuthEmulator(host, 9099);
+    await FirebaseStorage.instance.useStorageEmulator(host, 9199);
+    print("Connected to Firebase Emulator on: $host");
+  } catch (e) {
+    print("Emulator connection error: $e");
+  }
+}
+
+//--- Super Admin Setup Function --//
+
+Future<void> setupSuperAdmin() async {
+  final superAdminService = SuperAdminService();
+
+  try {
+    await superAdminService.initializeSuperAdmin(
+      email: 'superadmin@yourcompany.com',
+      password: 'SuperSecure@123',
+      name: 'Master Administrator',
+    );
+    print('✅ Super Admin created successfully');
+  } catch (e) {
+    print('❌ Error: $e');
   }
 }

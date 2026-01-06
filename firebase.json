@@ -1,1 +1,17 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"gym-lead-master-app","appId":"1:519586113502:android:202e4955b9257df94f9f4f","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"gym-lead-master-app","configurations":{"android":"1:519586113502:android:202e4955b9257df94f9f4f","ios":"1:519586113502:ios:17cad7883d5f2b6f4f9f4f","macos":"1:519586113502:ios:17cad7883d5f2b6f4f9f4f","web":"1:519586113502:web:372c9c8b71f4d1ff4f9f4f","windows":"1:519586113502:web:a3d38b5be76a639c4f9f4f"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "emulators": {
+    "auth": { "host": "0.0.0.0", "port": 9099 },
+    "firestore": { "host": "0.0.0.0", "port": 8080 },
+    "database": { "host": "0.0.0.0", "port": 9000 },
+    "storage": { "host": "0.0.0.0", "port": 9199 },
+    "ui": { "enabled": true, "host": "0.0.0.0", "port": 4000 },
+    "singleProjectMode": true
+  }
+}
