@@ -30,7 +30,7 @@ class CustomTextFormField extends StatelessWidget {
     var Size(:width, :height) = MediaQuery.sizeOf(context);
     return SizedBox(
       width: width * 0.9,
-      height: height * 0.07,
+      // height: height * 0.07,
       child: TextFormField(
         controller: controller,
         obscureText: obsecuretext,
@@ -39,6 +39,7 @@ class CustomTextFormField extends StatelessWidget {
         // onChanged: (value) => ,
         // autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
+          isDense: true,
           label: FittedBox(
             child: Text(
               label,

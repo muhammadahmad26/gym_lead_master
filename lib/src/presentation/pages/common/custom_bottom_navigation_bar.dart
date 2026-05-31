@@ -10,11 +10,13 @@ class CustomBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
   final bool isAdmin;
   final Function(int) onItemSelected;
+  final Function()? onCenterButtonTap;
   CustomBottomNavigationBar({
     super.key,
     required this.onItemSelected,
     required this.selectedIndex,
     this.isAdmin = false,
+    this.onCenterButtonTap,
   });
   final GlobalKey<FormState> globalKey = GlobalKey<FormState>();
 
@@ -117,6 +119,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
                           ),
                         ),
                         Expanded(
+                          child: Container(),
+                        ), // Spacer for center button
+                        Expanded(
                           child: BuildBottomNavigationButton(
                             selectedIndex: selectedIndex,
                             onItemSelected: onItemSelected,
@@ -150,19 +155,34 @@ class CustomBottomNavigationBar extends StatelessWidget {
             Positioned(
               bottom: 40,
               child: GestureDetector(
-                onTap: () {
-                  _showMyDialog(context);
-                },
+                onTap:
+                    onCenterButtonTap, // This is already handled by passing null from member_home_page
                 child: Container(
                   width: 50,
                   height: 50,
-                  decoration: const BoxDecoration(
-                    color: AppColors.Darktext,
+                  decoration: BoxDecoration(
+                    // Grey out when disabled
+                    color:
+                        onCenterButtonTap == null
+                            ? Colors.grey
+                            : AppColors.Darktext,
                     shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: AssetImage(AppImages.addUser),
-                    ),
+                    image:
+                        onCenterButtonTap == null
+                            ? null
+                            : const DecorationImage(
+                              image: AssetImage(AppImages.addUser),
+                            ),
                   ),
+                  // Show disabled indicator
+                  child:
+                      onCenterButtonTap == null
+                          ? const Icon(
+                            Icons.hourglass_empty,
+                            color: Colors.white,
+                            size: 24,
+                          )
+                          : null,
                 ),
               ),
             ),

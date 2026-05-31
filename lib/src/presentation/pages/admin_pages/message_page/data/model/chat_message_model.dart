@@ -61,8 +61,8 @@ class ChatMessageModel {
         other.time == time &&
         other.isMe == isMe;
   }
-  
+
   @override
-  int get hashCode => id.hashCode^text.hashCode^time.hashCode^isMe.hashCode;
-  
+  int get hashCode =>
+      id.hashCode ^ text.hashCode ^ time.hashCode ^ isMe.hashCode;
 }

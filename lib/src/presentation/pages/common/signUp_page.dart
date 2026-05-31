@@ -1,6 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_lead_master/services/auth_service.dart';
+import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/core/utils/email_validator.dart';
 import 'package:gym_lead_master/src/core/utils/password_validator.dart';
@@ -12,7 +13,14 @@ import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 class SignUpPage extends StatefulWidget {
   final String recognizer;
   final String route;
-  const SignUpPage({super.key, required this.recognizer, required this.route});
+  final bool isAdmin;
+
+  const SignUpPage({
+    super.key,
+    required this.recognizer,
+    required this.route,
+    this.isAdmin = false,
+  });
 
   @override
   State<SignUpPage> createState() => _SignUpPageState();
@@ -20,228 +28,318 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
-
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-
   final TextEditingController _passwordController = TextEditingController();
-
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+  final TextEditingController _gymIdController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
+
+  String _selectedRole = 'Gym Member';
   bool isLoading = false;
+  bool _autoValidate = false;
+  final AuthService _authService = AuthService();
+
   Future<void> _signUp(BuildContext context) async {
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+    if (!_formKey.currentState!.validate()) {
+      setState(() => _autoValidate = true);
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    String? error;
+    if (widget.isAdmin) {
+      error = await _authService.signUpAdmin(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
+        name: _nameController.text.trim(),
+        gymId: _gymIdController.text.trim(),
+        location: _locationController.text.trim(),
       );
-      await FirebaseAuth.instance.signOut();
+    } else {
+      error = await _authService.signUpMember(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+        name: _nameController.text.trim(),
+        gymId: _gymIdController.text.trim(),
+        role: _selectedRole,
+        location: _locationController.text.trim(),
+      );
+    }
 
+    setState(() => isLoading = false);
+
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.red),
+      );
+    } else {
       Navigator.pushNamedAndRemoveUntil(
         context,
         widget.route,
         (route) => false,
       );
-    } on FirebaseAuthException catch (e) {
-      String message;
-      if (e.code == 'email-already-in-use') {
-        message = 'The account already exists for that email.';
-      } else if (e.code == 'weak-password') {
-        message = 'The password provided is too weak.';
-      } else {
-        message = e.message ?? 'Sign up failed. Please try again.';
-      }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _gymIdController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     var Size(:width, :height) = MediaQuery.sizeOf(context);
-    final SizedBox customSizeBoxed = SizedBox(height: height * 0.02);
+    final SizedBox sizedBoxCustom = SizedBox(height: height * 0.02);
+
     return Stack(
       children: [
         AbsorbPointer(
           absorbing: isLoading,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: width * 0.05),
-              child: Column(
-                children: [
-                  SizedBox(height: height * 0.05),
-                  Image.asset(
-                    AppImages.appLogoIcon,
-                    width: width * 0.4,
-                    height: height * 0.2,
-                  ),
-                  SizedBox(height: height * 0.01),
+          child: AppBackGroundPage(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: width * 0.05),
+                child: Column(
+                  children: [
+                    SizedBox(height: height * 0.05),
 
-                  Container(
-                    margin: EdgeInsets.only(bottom: height * 0.05),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: width * 0.05,
-                      vertical: height * 0.03,
+                    // SAME AS LOGIN: App Logo at top
+                    Image.asset(
+                      AppImages.appLogoIcon,
+                      height: height * 0.15,
+                      width: width * 0.30,
                     ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color.fromARGB(
-                            255,
-                            104,
-                            119,
-                            126,
-                          ).withOpacity(0.2),
-                          const Color.fromARGB(
-                            255,
-                            176,
-                            196,
-                            222,
-                          ).withOpacity(0.2),
-                          const Color.fromARGB(
-                            255,
-                            255,
-                            255,
-                            255,
-                          ).withOpacity(0.2),
-                          const Color.fromARGB(
-                            255,
-                            255,
-                            255,
-                            255,
-                          ).withOpacity(0.2),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      border: Border.all(color: Colors.grey.shade300, width: 1),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
+                    SizedBox(height: height * 0.02),
+
+                    // SAME AS LOGIN: Professional container with gradient, border, shadow
+                    Container(
+                      padding: EdgeInsets.all(width * 0.05),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color.fromARGB(
+                              255,
+                              104,
+                              119,
+                              126,
+                            ).withOpacity(0.2),
+                            const Color.fromARGB(
+                              255,
+                              176,
+                              196,
+                              222,
+                            ).withOpacity(0.2),
+                            const Color.fromARGB(
+                              255,
+                              255,
+                              255,
+                              255,
+                            ).withOpacity(0.2),
+                            const Color.fromARGB(
+                              255,
+                              255,
+                              255,
+                              255,
+                            ).withOpacity(0.2),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                      ],
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          Text(
-                            'Sign Up',
-                            style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: height * 0.03),
-                          const CustomTextFormField(
-                            label: "Name",
-                            icon_asset: AppImages.weightLiftingIcon,
-                            keyboardType: TextInputType.name,
-                            // controller: TextEditingController(),
-                          ),
-                          customSizeBoxed,
-                          CustomTextFormField(
-                            validator:
-                                (value) => EmailValidator.validator(value),
-                            controller: _emailController,
-
-                            icon_asset: AppImages.emailIcon,
-                            label: 'Email',
-                            keyboardType: TextInputType.emailAddress,
-                          ),
-                          customSizeBoxed,
-                          PasswordField(
-                            label: "password",
-                            validator:
-                                (value) => PasswordValidator.validator(value),
-                            controller: _passwordController,
-                          ),
-                          customSizeBoxed,
-                          PasswordField(
-                            controller: _confirmPasswordController,
-                            validator:
-                                (Value) =>
-                                    Value != _passwordController.text
-                                        ? "Passwords do not match"
-                                        : null,
-                            label: "Confirm Password",
-                          ),
-                          customSizeBoxed,
-
-                          const CustomTextFormField(
-                            label: "Location",
-                            icon_asset: AppImages.locationIcon,
-                          ),
-                          customSizeBoxed,
-                          isLoading
-                              ? const CircularProgressIndicator()
-                              : AppButton(
-                                onPressed: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    _signUp(context);
-                                  }
-                                },
-                                text: 'Sign Up',
-                              ),
-                          customSizeBoxed,
-
-                          Padding(
-                            padding: const EdgeInsets.only(left: 15),
-                            child: RichText(
-                              text: TextSpan(
-                                text: "Already have an account? ",
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: 'Login',
-                                    style: TextStyle(
-                                      color: Colors.blueAccent.shade700,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                    recognizer:
-                                        TapGestureRecognizer()
-                                          ..onTap = () {
-                                            Navigator.pushNamedAndRemoveUntil(
-                                              context,
-                                              widget.recognizer,
-                                              (route) =>
-                                                  route.settings.name ==
-                                                  AppRoutes.initialPage,
-                                            );
-                                          },
-                                  ),
-                                ],
-                              ),
-                            ),
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
+                      child: Form(
+                        key: _formKey,
+                        autovalidateMode:
+                            _autoValidate
+                                ? AutovalidateMode.onUserInteraction
+                                : AutovalidateMode.disabled,
+                        child: Column(
+                          children: [
+                            // SAME AS LOGIN: Title
+                            Text(
+                              widget.isAdmin
+                                  ? 'Admin Sign Up'
+                                  : 'Member Sign Up',
+                              style: const TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+
+                            SizedBox(height: height * 0.03),
+
+                            // Name
+                            CustomTextFormField(
+                              label: "Name",
+                              controller: _nameController,
+                              icon_asset: AppImages.userIcon,
+                              validator:
+                                  (val) => val!.isEmpty ? "Required" : null,
+                            ),
+                            sizedBoxCustom,
+
+                            // Email
+                            CustomTextFormField(
+                              controller: _emailController,
+                              validator: EmailValidator.validator,
+                              icon_asset: AppImages.emailIcon,
+                              label: 'Email',
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+                            sizedBoxCustom,
+
+                            // Password
+                            PasswordField(
+                              controller: _passwordController,
+                              label: "Password",
+                              validator: PasswordValidator.validator,
+                            ),
+                            sizedBoxCustom,
+
+                            // Confirm Password
+                            PasswordField(
+                              controller: _confirmPasswordController,
+                              validator:
+                                  (val) =>
+                                      val != _passwordController.text
+                                          ? "Passwords do not match"
+                                          : null,
+                              label: "Confirm Password",
+                            ),
+                            sizedBoxCustom,
+
+                            // Gym ID
+                            CustomTextFormField(
+                              controller: _gymIdController,
+                              label:
+                                  widget.isAdmin
+                                      ? "Create Unique Gym ID"
+                                      : "Enter Gym ID",
+                              icon_asset: AppImages.userIcon,
+                              validator:
+                                  (val) => val!.isEmpty ? "Required" : null,
+                            ),
+                            sizedBoxCustom,
+
+                            // Location
+                            CustomTextFormField(
+                              controller: _locationController,
+                              label: "Location",
+                              icon_asset: AppImages.locationIcon,
+                              validator:
+                                  (val) => val!.isEmpty ? "Required" : null,
+                            ),
+                            sizedBoxCustom,
+
+                            // Role (Member only)
+                            if (!widget.isAdmin)
+                              DropdownButtonFormField<String>(
+                                value: _selectedRole,
+                                items:
+                                    ['Gym Member', 'Trainer'].map((role) {
+                                      return DropdownMenuItem(
+                                        value: role,
+                                        child: Text(role),
+                                      );
+                                    }).toList(),
+                                onChanged:
+                                    (val) =>
+                                        setState(() => _selectedRole = val!),
+                                decoration: InputDecoration(
+                                  labelText: "Role",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 16,
+                                  ),
+                                ),
+                              ),
+
+                            if (!widget.isAdmin) sizedBoxCustom,
+
+                            // AS LOGIN: Button or Loading
+                            isLoading
+                                ? const CircularProgressIndicator()
+                                : AppButton(
+                                  onPressed: () {
+                                    if (_formKey.currentState!.validate()) {
+                                      _signUp(context);
+                                    } else {
+                                      setState(() => _autoValidate = true);
+                                    }
+                                  },
+                                  text: 'Sign Up',
+                                ),
+
+                            SizedBox(height: height * 0.01),
+
+                            // AS LOGIN: Sign In link
+                            //  Navigate to Login page instead of pop
+                            Padding(
+                              padding: const EdgeInsets.only(left: 75),
+                              child: RichText(
+                                text: TextSpan(
+                                  text: "Already have an account? ",
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: "Sign In",
+                                      style: TextStyle(
+                                        color: Colors.blueAccent.shade700,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                      recognizer:
+                                          TapGestureRecognizer()
+                                            ..onTap = () {
+                                              //  Navigate to login page properly
+                                              Navigator.pushNamedAndRemoveUntil(
+                                                context,
+                                                widget
+                                                    .route, // This IS the login route
+                                                (route) =>
+                                                    route.settings.name ==
+                                                    AppRoutes.initialPage,
+                                              );
+                                            },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

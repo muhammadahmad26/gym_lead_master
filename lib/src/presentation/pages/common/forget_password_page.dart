@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
@@ -18,26 +17,51 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
   final TextEditingController emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+
   Future<void> _sendPasswordResetEmail() async {
+    // 1. Validate Form
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
+
     try {
+      // 2. Send Email via Firebase
       await FirebaseAuth.instance.sendPasswordResetEmail(
         email: emailController.text.trim(),
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password reset email sent. Please check your inbox.'),
-        ),
-      );
-      Navigator.pop(context);
+
+      // 3. Show Success Message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password reset email sent. Please check your inbox.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // 4. Go back to Login Page
+        Navigator.pop(context);
+      }
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message ?? 'Failed to send password reset email.'),
-        ),
-      );
+      // 5. Handle Errors (e.g., user not found)
+      String message = 'Failed to send password reset email.';
+      if (e.code == 'user-not-found') {
+        message = 'No user found for that email.';
+      } else if (e.code == 'invalid-email') {
+        message = 'The email address is badly formatted.';
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       setState(() {
         _isLoading = false;
@@ -58,6 +82,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
           ),
         ),
         backgroundColor: AppColors.mediumBlue,
+        iconTheme: const IconThemeData(color: AppColors.blackColor),
       ),
       body: AppBackGroundPage(
         child: Padding(
@@ -72,7 +97,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.Lightertext,
+                    color: AppColors.whiteColor,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -86,29 +111,32 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                 const SizedBox(height: 16),
                 _isLoading
                     ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.whiteColor,
-                        strokeWidth: 2,
-                      ),
-                    )
-                    : Align(
-                      alignment: Alignment.center,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            _sendPasswordResetEmail();
-                          }
-                        },
-                        child: const Text(
-                          'Send Reset Link',
-                          style: TextStyle(
-                            color: AppColors.Lightertext,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                        child: CircularProgressIndicator(
+                          color: AppColors.whiteColor,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _sendPasswordResetEmail,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.blueColor,
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Send Reset Link',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
-                    ),
               ],
             ),
           ),

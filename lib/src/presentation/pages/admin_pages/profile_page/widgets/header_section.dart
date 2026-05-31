@@ -12,70 +12,72 @@ class HeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppPaddings.large),
-      decoration: const BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.blackColor,
-            offset: Offset(2, 2),
-            blurRadius: 10,
-            spreadRadius: 1,
-            blurStyle: BlurStyle.normal,
+    return SingleChildScrollView(
+      child: Container(
+        padding: const EdgeInsets.all(AppPaddings.large),
+        decoration: const BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.blackColor,
+              offset: Offset(2, 2),
+              blurRadius: 10,
+              spreadRadius: 1,
+              blurStyle: BlurStyle.normal,
+            ),
+          ],
+          color: AppColors.DarkBlueGrey,
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(20),
+            bottomRight: Radius.circular(20),
           ),
-        ],
-        color: AppColors.DarkBlueGrey,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
         ),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 40,
-            backgroundColor: Colors.white,
-            child: Image.asset(AppImages.userIcon, fit: BoxFit.contain),
-          ),
-          const SizedBox(width: AppPaddings.medium),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  admin.name,
-                  style: AppTextStyles.headlineLarge.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  admin.email,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.BrightBlue.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    admin.role,
-                    style: AppTextStyles.labelLarge.copyWith(
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 40,
+              backgroundColor: Colors.white,
+              child: Image.asset(AppImages.userIcon, fit: BoxFit.contain),
+            ),
+            const SizedBox(width: AppPaddings.medium),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    admin.name,
+                    style: AppTextStyles.headlineLarge.copyWith(
                       color: Colors.white,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    admin.email,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.BrightBlue.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      admin.role,
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

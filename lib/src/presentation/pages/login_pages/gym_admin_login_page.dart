@@ -14,15 +14,15 @@ class GymAdminLoginPage extends StatelessWidget {
       body: AppBackGroundPage(
         child: LoginPage(
           route: AppRoutes.adminHomePage,
-          recognizer:
-              TapGestureRecognizer()
-                ..onTap = () {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    AppRoutes.gymAdminSignUpPage,
-                    (route) => route.settings.name == AppRoutes.initialPage,
-                  );
-                },
+          expectedRole: 'admin', 
+          recognizer: TapGestureRecognizer()
+            ..onTap = () {
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.gymAdminSignUpPage,
+                (route) => route.settings.name == AppRoutes.initialPage,
+              );
+            },
         ),
       ),
     );

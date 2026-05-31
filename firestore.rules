@@ -1,8 +1,82 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isGymAdmin(gymId) {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/gyms/$(gymId)).data.adminId == request.auth.uid;
+    }
+    
+    function isGymMember(gymId) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.gymId == gymId;
+    }
+
+    match /gyms/{gymId} {
+      allow read: if isGymAdmin(gymId) || isGymMember(gymId);
+      allow write: if isAuthenticated() && isGymAdmin(gymId);
+      
+      match /payment_methods/{methodId} {
+        allow read: if isGymAdmin(gymId) || isGymMember(gymId);
+        allow write: if isGymAdmin(gymId);
+      }
+      
+      match /membership_plans/{planId} {
+        allow read: if isGymAdmin(gymId) || isGymMember(gymId);
+        allow write: if isGymAdmin(gymId);
+      }
+      
+      match /payments/{paymentId} {
+        allow read: if isGymAdmin(gymId) || (isGymMember(gymId) && resource.data.memberId == request.auth.uid);
+        allow create: if isGymMember(gymId) && request.resource.data.memberId == request.auth.uid;
+        allow update: if isGymAdmin(gymId) || (isGymMember(gymId) && resource.data.status == 'not_paid' && request.resource.data.status == 'pending');
+      }
+      
+      match /members/{memberId} {
+        allow read: if isGymAdmin(gymId) || request.auth.uid == memberId;
+        allow write: if isGymAdmin(gymId);
+      }
+      
+      match /stats/{date} {
+        allow read, write: if isGymAdmin(gymId) || isGymMember(gymId);
+      }
+      
+      match /chat_rooms/{chatId} {
+        allow read, write: if isGymAdmin(gymId) || isGymMember(gymId);
+        match /messages/{msgId} {
+          allow read, write: if isGymAdmin(gymId) || isGymMember(gymId);
+        }
+      }
+      
+      match /notifications/{notifId} {
+        allow read, write: if isGymAdmin(gymId);
+      }
+
+      match /broadcasts/{broadcastId} {
+        allow read: if isGymAdmin(gymId) || isGymMember(gymId);
+        allow write: if isGymAdmin(gymId);
+      }
+    }
+    
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if request.auth.uid == userId;
+      
+      match /notifications/{notifId} {
+        // ✅ UPDATED: Member can read, update, delete own notifications
+        // ✅ NEW: Admin of member's gym can also update (for cascade soft-delete)
+        allow read, update, delete: if request.auth.uid == userId 
+            || isGymAdmin(get(/databases/$(database)/documents/users/$(userId)).data.gymId);
+        
+        // ✅ Admin can create notifications in member's subcollection
+        allow create: if isAuthenticated() 
+            && isGymAdmin(get(/databases/$(database)/documents/users/$(userId)).data.gymId);
+      }
     }
   }
 }

@@ -46,7 +46,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '519586113502',
     projectId: 'gym-lead-master-app',
     authDomain: 'gym-lead-master-app.firebaseapp.com',
-    databaseURL: 'https://gym-lead-master-app-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://gym-lead-master-app-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'gym-lead-master-app.firebasestorage.app',
   );
 
@@ -55,7 +56,8 @@ class DefaultFirebaseOptions {
     appId: '1:519586113502:android:202e4955b9257df94f9f4f',
     messagingSenderId: '519586113502',
     projectId: 'gym-lead-master-app',
-    databaseURL: 'https://gym-lead-master-app-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://gym-lead-master-app-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'gym-lead-master-app.firebasestorage.app',
   );
 
@@ -64,7 +66,8 @@ class DefaultFirebaseOptions {
     appId: '1:519586113502:ios:17cad7883d5f2b6f4f9f4f',
     messagingSenderId: '519586113502',
     projectId: 'gym-lead-master-app',
-    databaseURL: 'https://gym-lead-master-app-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://gym-lead-master-app-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'gym-lead-master-app.firebasestorage.app',
     iosBundleId: 'com.example.gymLeadMaster',
   );
@@ -74,7 +77,8 @@ class DefaultFirebaseOptions {
     appId: '1:519586113502:ios:17cad7883d5f2b6f4f9f4f',
     messagingSenderId: '519586113502',
     projectId: 'gym-lead-master-app',
-    databaseURL: 'https://gym-lead-master-app-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://gym-lead-master-app-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'gym-lead-master-app.firebasestorage.app',
     iosBundleId: 'com.example.gymLeadMaster',
   );
@@ -85,7 +89,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '519586113502',
     projectId: 'gym-lead-master-app',
     authDomain: 'gym-lead-master-app.firebaseapp.com',
-    databaseURL: 'https://gym-lead-master-app-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://gym-lead-master-app-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'gym-lead-master-app.firebasestorage.app',
   );
 }

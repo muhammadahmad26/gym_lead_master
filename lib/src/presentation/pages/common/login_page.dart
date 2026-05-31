@@ -8,37 +8,96 @@ import 'package:gym_lead_master/src/core/widgets/passwordField.dart';
 import 'package:gym_lead_master/src/core/widgets/app_button.dart';
 import 'package:gym_lead_master/src/core/widgets/custom_textForm_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gym_lead_master/src/presentation/pages/common/forget_password_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key, this.recognizer, required this.route});
+  const LoginPage({
+    super.key,
+    this.recognizer,
+    required this.route,
+    required this.expectedRole, 
+  });
+
   final String route;
   final GestureRecognizer? recognizer;
+  final String expectedRole; // 'admin' or 'member'
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
+
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-
   final TextEditingController _emailController = TextEditingController();
-
   final TextEditingController _passwordController = TextEditingController();
   bool isLoading = false;
+
+  // Auto-validate state
+  bool _autoValidate = false;
+
   Future<void> _login(BuildContext context) async {
+    // Validate form
+    if (!_formKey.currentState!.validate()) {
+      setState(() {
+        _autoValidate = true; // If validation fails, turn on auto-validate
+      });
+      return;
+    }
+
     setState(() {
       isLoading = true;
     });
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        widget.route,
-        (route) => false,
-      );
+      // 1. Firebase Authentication
+      UserCredential credential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
+
+      // 2. Fetch User Role from Firestore
+      DocumentSnapshot userDoc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(credential.user!.uid)
+              .get();
+
+      if (userDoc.exists) {
+        String userRole =
+            userDoc.data() is Map<String, dynamic>
+                ? (userDoc.data() as Map<String, dynamic>)['role'] ?? 'member'
+                : 'member';
+
+        // 3. Verify Role
+        if (widget.expectedRole == 'admin') {
+          if (userRole != 'admin') {
+            await FirebaseAuth.instance.signOut();
+            throw Exception(
+              "Access Denied! This account is not registered as an Admin.",
+            );
+          }
+        } else {
+          if (userRole == 'admin') {
+            await FirebaseAuth.instance.signOut();
+            throw Exception(
+              "Access Denied! Admins cannot login on Member side.",
+            );
+          }
+        }
+      } else {
+        await FirebaseAuth.instance.signOut();
+        throw Exception("User data not found in database.");
+      }
+
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          widget.route,
+          (route) => false,
+        );
+      }
     } on FirebaseAuthException catch (e) {
       String message;
       if (e.code == 'user-not-found') {
@@ -48,13 +107,27 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         message = e.message ?? 'Login failed. Please try again.';
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll("Exception: ", "")),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -69,6 +142,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final Size(:width, :height) = MediaQuery.sizeOf(context);
     final SizedBox sizedBoxCustom = SizedBox(height: height * 0.02);
+
     return Stack(
       children: [
         AbsorbPointer(
@@ -87,7 +161,6 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(height: height * 0.01),
                   Container(
                     padding: EdgeInsets.all(width * 0.05),
-
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -132,6 +205,11 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     child: Form(
                       key: _formKey,
+                      // Autovalidate mode added
+                      autovalidateMode:
+                          _autoValidate
+                              ? AutovalidateMode.onUserInteraction
+                              : AutovalidateMode.disabled,
                       child: Column(
                         children: [
                           Text(
@@ -143,7 +221,6 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           SizedBox(height: height * 0.05),
-
                           CustomTextFormField(
                             controller: _emailController,
                             validator:
@@ -159,26 +236,29 @@ class _LoginPageState extends State<LoginPage> {
                             validator:
                                 (value) => PasswordValidator.validator(value),
                           ),
-
-                          // sizedBoxCustom,
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
                               onPressed: () {
-                                // Implement forgot password functionality
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => const ForgetPasswordPage(),
+                                  ),
+                                );
                               },
                               child: Text(
                                 'Forgot Password?',
                                 style: TextStyle(
                                   decoration: TextDecoration.underline,
-                                  decorationColor: Color(0xFF1976D2),
+                                  decorationColor: const Color(0xFF1976D2),
                                   color: Colors.blueAccent.shade700,
                                   fontSize: 14,
                                 ),
                               ),
                             ),
                           ),
-
                           sizedBoxCustom,
                           isLoading
                               ? const CircularProgressIndicator()
@@ -187,6 +267,11 @@ class _LoginPageState extends State<LoginPage> {
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {
                                     _login(context);
+                                  } else {
+                                    // If validation fails, turn on auto-validate
+                                    setState(() {
+                                      _autoValidate = true;
+                                    });
                                   }
                                 },
                               ),

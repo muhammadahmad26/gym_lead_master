@@ -7,9 +7,14 @@ class AppRoutes {
   static const String adminHomePage = "./Admin_home_page";
   static const String checkInPage = "./active_member_list_page";
   static const String memberHomePage = "./member_home_page";
-  static const String chatDetailScreen = "./chat_detail_screen";
+  // static const String chatDetailScreen = "./chat_detail_screen";
 
   static const String superAdminLoginPage = '/super_admin_login';
   static const String superAdminDashboard = '/super_admin_dashboard';
   static const String adminManagementPage = '/admin_management';
+  // In appRoutes.dart
+  static const String helpFaqPage = "/help_faq";
+  static const String contactSupportPage = "/contact_support";
+  static const String aboutAppPage = "/about_app";
+  static const String termsPage = "/terms";
 }

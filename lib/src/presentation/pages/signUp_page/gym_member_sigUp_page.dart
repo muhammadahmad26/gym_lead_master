@@ -15,6 +15,7 @@ class GymMemberSignUpPage extends StatelessWidget {
           child: SignUpPage(
             route: AppRoutes.gymMemberLoginPage,
             recognizer: AppRoutes.gymMemberLoginPage,
+            isAdmin: false,
           ),
         ),
       ),
