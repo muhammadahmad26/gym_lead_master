@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_lead_master/services/database_service.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
+import 'package:gym_lead_master/src/core/utils/app_responsive.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/home_body.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/custom_bottom_navigation_bar.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/profile_page/profile_screen.dart';
@@ -24,7 +25,7 @@ class _MemeberHomePageState extends State<MemeberHomePage> {
   String _gymId = "loading";
   bool _isCheckedInToday = false;
   bool _isCheckingIn = false;
-  String _membershipStatus = 'not_paid'; 
+  String _membershipStatus = 'not_paid';
 
   final DatabaseService _dbService = DatabaseService();
 
@@ -111,7 +112,214 @@ class _MemeberHomePageState extends State<MemeberHomePage> {
   }
 
   // ==========================================
-  // REWRITTEN: Check-In with 3 guards
+  // ✅ FIXED: Already Checked In Dialog (Responsive Text)
+  // ==========================================
+  void _showAlreadyCheckedInDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Row(
+              children: [
+                Icon(
+                  Icons.check_circle,
+                  color: Colors.green[600],
+                  size: AppResponsive.iconSize(context, 28),
+                ),
+                SizedBox(width: AppResponsive.padding(context, 10)),
+                Flexible(
+                  child: Text(
+                    "Already Checked In",
+                    style: AppResponsive.textStyle(
+                      context,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.event_available,
+                  size: AppResponsive.iconSize(context, 60),
+                  color: Colors.green[200],
+                ),
+                SizedBox(height: AppResponsive.padding(context, 12)),
+                Text(
+                  "Today's attendance has already been recorded.",
+                  style: AppResponsive.textStyle(
+                    context,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: AppResponsive.padding(context, 8)),
+                Text(
+                  "You can check in again tomorrow.",
+                  style: AppResponsive.textStyle(
+                    context,
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            actions: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.blueColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    "OK",
+                    style: AppResponsive.textStyle(
+                      context,
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  // ==========================================
+  // ✅ FIXED: Payment Required Dialog (Responsive Text)
+  // ==========================================
+  void _showPaymentRequiredDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Row(
+              children: [
+                Icon(
+                  Icons.block,
+                  color: Colors.red[700],
+                  size: AppResponsive.iconSize(context, 28),
+                ),
+                SizedBox(width: AppResponsive.padding(context, 10)),
+                Flexible(
+                  child: Text(
+                    "Access Denied",
+                    style: AppResponsive.textStyle(
+                      context,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.payment_outlined,
+                  size: AppResponsive.iconSize(context, 60),
+                  color: Colors.red[200],
+                ),
+                SizedBox(height: AppResponsive.padding(context, 12)),
+                Text(
+                  "Your payment is not paid.",
+                  style: AppResponsive.textStyle(
+                    context,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.DarkBlueGrey,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: AppResponsive.padding(context, 8)),
+                Text(
+                  "Please pay your membership fee first to access the gym and check in.",
+                  style: AppResponsive.textStyle(
+                    context,
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            actions: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() => _currentIndex = 1);
+                  },
+                  icon: Icon(
+                    Icons.payment,
+                    color: Colors.white,
+                    size: AppResponsive.iconSize(context, 20),
+                  ),
+                  label: Text(
+                    "Go to Payments",
+                    style: AppResponsive.textStyle(
+                      context,
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.blueColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      vertical: AppResponsive.padding(context, 12),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: AppResponsive.padding(context, 8)),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      vertical: AppResponsive.padding(context, 12),
+                    ),
+                  ),
+                  child: Text(
+                    "Close",
+                    style: AppResponsive.textStyle(context, fontSize: 14),
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  // ==========================================
+  // ✅ FIXED: Check-In Dialog (Responsive Text)
   // ==========================================
   void _showCheckInDialog() {
     if (_gymId == "loading") {
@@ -121,19 +329,16 @@ class _MemeberHomePageState extends State<MemeberHomePage> {
       return;
     }
 
-    // GUARD 1: Payment not active
     if (_membershipStatus != 'active') {
       _showPaymentRequiredDialog();
       return;
     }
 
-    // GUARD 2: Already checked in today
     if (_isCheckedInToday) {
       _showAlreadyCheckedInDialog();
       return;
     }
 
-    // GUARD 3: Normal exercise selection
     Map<String, bool> selectedExercises = {
       "Chest": false,
       "Leg": false,
@@ -157,15 +362,22 @@ class _MemeberHomePageState extends State<MemeberHomePage> {
                   ),
                   title: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.fitness_center,
                         color: AppColors.blueColor,
-                        size: 24,
+                        size: AppResponsive.iconSize(context, 24),
                       ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        "Today's Check-In",
-                        style: TextStyle(fontSize: 20),
+                      SizedBox(width: AppResponsive.padding(context, 10)),
+                      Flexible(
+                        child: Text(
+                          "Today's Check-In",
+                          style: AppResponsive.textStyle(
+                            context,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
@@ -174,20 +386,31 @@ class _MemeberHomePageState extends State<MemeberHomePage> {
                     children: [
                       Text(
                         DateFormat('dd MMM yyyy, EEEE').format(DateTime.now()),
-                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        "Select your exercises for today:",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                        style: AppResponsive.textStyle(
+                          context,
+                          fontSize: 13,
+                          color: Colors.grey[600],
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: AppResponsive.padding(context, 12)),
+                      Text(
+                        "Select your exercises for today:",
+                        style: AppResponsive.textStyle(
+                          context,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: AppResponsive.padding(context, 8)),
                       ...selectedExercises.keys.map((exercise) {
                         return CheckboxListTile(
-                          title: Text(exercise),
+                          title: Text(
+                            exercise,
+                            style: AppResponsive.textStyle(
+                              context,
+                              fontSize: 14,
+                            ),
+                          ),
                           value: selectedExercises[exercise],
                           activeColor: AppColors.blueColor,
                           controlAffinity: ListTileControlAffinity.leading,
@@ -300,164 +523,22 @@ class _MemeberHomePageState extends State<MemeberHomePage> {
                               : const Icon(Icons.check_circle, size: 20),
                       label: Text(
                         isDialogSaving ? "Saving..." : "Save",
-                        style: const TextStyle(color: Colors.white),
+                        style: AppResponsive.textStyle(
+                          context,
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.blueColor,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppResponsive.padding(context, 20),
+                          vertical: AppResponsive.padding(context, 10),
                         ),
                       ),
                     ),
                   ],
                 ),
-          ),
-    );
-  }
-
-  // ==========================================
-  // Payment Required Dialog
-  // ==========================================
-  void _showPaymentRequiredDialog() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Row(
-              children: [
-                Icon(Icons.block, color: Colors.red[700], size: 28),
-                const SizedBox(width: 10),
-                const Text("Access Denied"),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.payment_outlined, size: 60, color: Colors.red[200]),
-                const SizedBox(height: 12),
-                const Text(
-                  "Your payment is not paid.",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.DarkBlueGrey,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "Please pay your membership fee first to access the gym and check in.",
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-            actions: [
-              // Go to Payments Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // Navigate to Payments tab
-                    setState(() => _currentIndex = 1);
-                  },
-                  icon: const Icon(
-                    Icons.payment,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  label: const Text(
-                    "Go to Payments",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.blueColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              // Close Button
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child: const Text("Close"),
-                ),
-              ),
-            ],
-          ),
-    );
-  }
-
-  // ==========================================
-  // Already Checked In Dialog
-  // ==========================================
-  void _showAlreadyCheckedInDialog() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.green[600], size: 28),
-                const SizedBox(width: 10),
-                const Text("Already Checked In"),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.event_available, size: 60, color: Colors.green[200]),
-                const SizedBox(height: 12),
-                const Text(
-                  "Today's attendance has already been recorded.",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "You can check in again tomorrow.",
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-            actions: [
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.blueColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    "OK",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
           ),
     );
   }
