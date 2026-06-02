@@ -288,7 +288,10 @@ class _GymMembersPageState extends State<GymMembersPage> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        _buildProfileAvatar(profileBase64),
+                                        _buildProfileAvatar(
+  imageUrl: data['profileImageUrl'] ?? '', 
+  base64Image: data['profileImageBase64'] ?? '',
+),
                                         const SizedBox(width: 16),
                                         Expanded(
                                           child: Column(
@@ -431,27 +434,39 @@ class _GymMembersPageState extends State<GymMembersPage> {
     );
   }
 
-  // Safe Profile Avatar Loader
-  Widget _buildProfileAvatar(String? base64Image, {double radius = 30}) {
-    if (base64Image != null && base64Image.isNotEmpty) {
-      try {
-        return CircleAvatar(
-          radius: radius,
-          backgroundColor: Colors.grey[300],
-          backgroundImage: MemoryImage(base64Decode(base64Image)),
-        );
-      } catch (e) {
-        return CircleAvatar(
-          radius: radius,
-          backgroundColor: Colors.grey[300],
-          child: Icon(Icons.person, size: radius, color: Colors.grey[600]),
-        );
-      }
-    }
+Widget _buildProfileAvatar({String? imageUrl, String? base64Image, double radius = 25}) {
+  // Priority 1: Cloudinary URL (New fast way)
+  if (imageUrl != null && imageUrl.isNotEmpty) {
     return CircleAvatar(
       radius: radius,
       backgroundColor: Colors.grey[300],
-      child: Icon(Icons.person, size: radius, color: Colors.grey[600]),
+      backgroundImage: NetworkImage(imageUrl),
+      onBackgroundImageError: (_, __) {}, // Prevent red screen if URL fails
     );
   }
+  
+  // Priority 2: Old Base64 (Fallback for old users)
+  if (base64Image != null && base64Image.isNotEmpty) {
+    try {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.grey[300],
+        backgroundImage: MemoryImage(base64Decode(base64Image)),
+      );
+    } catch (e) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.grey[300],
+        child: Icon(Icons.person, size: radius, color: Colors.grey[600]),
+      );
+    }
+  }
+
+  // Priority 3: Default Icon
+  return CircleAvatar(
+    radius: radius,
+    backgroundColor: Colors.grey[300],
+    child: Icon(Icons.person, size: radius, color: Colors.grey[600]),
+  );
+}
 }

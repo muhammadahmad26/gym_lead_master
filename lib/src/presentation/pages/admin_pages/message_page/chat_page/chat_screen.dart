@@ -12,6 +12,7 @@ class ChatDetailScreen extends StatefulWidget {
   final String receiverUid;
   final String receiverName;
   final String receiverImageBase64;
+  final String receiverImageUrl;
 
   const ChatDetailScreen({
     super.key,
@@ -19,6 +20,7 @@ class ChatDetailScreen extends StatefulWidget {
     required this.receiverUid,
     required this.receiverName,
     required this.receiverImageBase64,
+    required this.receiverImageUrl,
   });
 
   @override
@@ -222,7 +224,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            _buildProfileAvatar(widget.receiverImageBase64, radius: 18),
+           _buildProfileAvatar(
+      imageUrl: widget.receiverImageUrl, 
+      base64Image: widget.receiverImageBase64, 
+      radius: 18,
+    ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(widget.receiverName, overflow: TextOverflow.ellipsis),
@@ -532,26 +538,39 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
   }
 
-  Widget _buildProfileAvatar(String base64Image, {double radius = 25}) {
-    if (base64Image.isNotEmpty) {
-      try {
-        return CircleAvatar(
-          radius: radius,
-          backgroundColor: Colors.grey[300],
-          backgroundImage: MemoryImage(base64Decode(base64Image)),
-        );
-      } catch (e) {
-        return CircleAvatar(
-          radius: radius,
-          backgroundColor: Colors.grey[300],
-          child: Icon(Icons.person, size: radius),
-        );
-      }
-    }
+  Widget _buildProfileAvatar({String? imageUrl, String? base64Image, double radius = 25}) {
+  // Priority 1: Cloudinary URL (New fast way)
+  if (imageUrl != null && imageUrl.isNotEmpty) {
     return CircleAvatar(
       radius: radius,
       backgroundColor: Colors.grey[300],
-      child: Icon(Icons.person, size: radius),
+      backgroundImage: NetworkImage(imageUrl),
+      onBackgroundImageError: (_, __) {}, // Prevent red screen if URL fails
     );
   }
+  
+  // Priority 2: Old Base64 (Fallback for old users)
+  if (base64Image != null && base64Image.isNotEmpty) {
+    try {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.grey[300],
+        backgroundImage: MemoryImage(base64Decode(base64Image)),
+      );
+    } catch (e) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.grey[300],
+        child: Icon(Icons.person, size: radius, color: Colors.grey[600]),
+      );
+    }
+  }
+
+  // Priority 3: Default Icon
+  return CircleAvatar(
+    radius: radius,
+    backgroundColor: Colors.grey[300],
+    child: Icon(Icons.person, size: radius, color: Colors.grey[600]),
+  );
+}
 }

@@ -106,8 +106,9 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
                       vertical: 8,
                     ),
                     leading: _buildProfileAvatar(
-                      userData['profileImageBase64'] ?? '',
-                    ),
+  imageUrl: userData['profileImageUrl'] ?? '',
+  base64Image: userData['profileImageBase64'] ?? '',
+),
                     title: Text(
                       userData['name'] ?? 'Unknown',
                       style: const TextStyle(fontWeight: FontWeight.bold),
@@ -132,6 +133,8 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
                                 receiverName: userData['name'] ?? 'Unknown',
                                 receiverImageBase64:
                                     userData['profileImageBase64'] ?? '',
+                                    receiverImageUrl: userData['profileImageUrl'] ?? '',
+
                               ),
                         ),
                       );
@@ -194,26 +197,39 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
   }
 
   // Base64 Profile Avatar
-  Widget _buildProfileAvatar(String base64Image, {double radius = 25}) {
-    if (base64Image.isNotEmpty) {
-      try {
-        return CircleAvatar(
-          radius: radius,
-          backgroundColor: Colors.grey[300],
-          backgroundImage: MemoryImage(base64Decode(base64Image)),
-        );
-      } catch (e) {
-        return CircleAvatar(
-          radius: radius,
-          backgroundColor: Colors.grey[300],
-          child: Icon(Icons.person, size: radius),
-        );
-      }
-    }
+ Widget _buildProfileAvatar({String? imageUrl, String? base64Image, double radius = 25}) {
+  // Priority 1: Cloudinary URL (New fast way)
+  if (imageUrl != null && imageUrl.isNotEmpty) {
     return CircleAvatar(
       radius: radius,
       backgroundColor: Colors.grey[300],
-      child: Icon(Icons.person, size: radius),
+      backgroundImage: NetworkImage(imageUrl),
+      onBackgroundImageError: (_, __) {}, // Prevent red screen if URL fails
     );
   }
+  
+  // Priority 2: Old Base64 (Fallback for old users)
+  if (base64Image != null && base64Image.isNotEmpty) {
+    try {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.grey[300],
+        backgroundImage: MemoryImage(base64Decode(base64Image)),
+      );
+    } catch (e) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.grey[300],
+        child: Icon(Icons.person, size: radius, color: Colors.grey[600]),
+      );
+    }
+  }
+
+  // Priority 3: Default Icon
+  return CircleAvatar(
+    radius: radius,
+    backgroundColor: Colors.grey[300],
+    child: Icon(Icons.person, size: radius, color: Colors.grey[600]),
+  );
+}
 }

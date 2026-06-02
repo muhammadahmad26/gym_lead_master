@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gym_lead_master/services/cloudinary_service.dart';
 import 'package:gym_lead_master/services/settings_service.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
@@ -17,7 +18,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/profile_page/help_faq_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/profile_page/contact_support_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/profile_page/about_app_screen.dart';
-
 
 class ProfileScreen extends StatefulWidget {
   final bool isAdmin;
@@ -43,6 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isImageUploading = false;
   String _uploadStatus = "";
   String _profileImageBase64 = "";
+  String _profileImageUrl = "";
   Uint8List? _profileImageBytes;
 
   @override
@@ -66,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (doc.exists) {
         var data = doc.data()!;
         String base64Image = data['profileImageBase64'] ?? "";
-
+         String imageUrl = data['profileImageUrl'] ?? "";
         setState(() {
           _userData = {
             'name': data['name'] ?? "User",
@@ -76,6 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             'gymId': data['gymId'] ?? "",
           };
           _profileImageBase64 = base64Image;
+          _profileImageUrl = imageUrl;
 
           if (base64Image.isNotEmpty) {
             try {
@@ -104,81 +106,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  // ==================== IMAGE UPLOAD (Base64 in Firestore) ====================
+  // _pickAndUploadImage method ko replace karein:
   Future<void> _pickAndUploadImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 400,
-      maxHeight: 400,
-      imageQuality: 60,
+      maxWidth: 800,
+      maxHeight: 800,
+      imageQuality: 70,
     );
 
     if (image == null) return;
 
+    setState(() {
+      _isImageUploading = true;
+      _uploadStatus = "Uploading to cloud...";
+    });
+
     try {
-      Uint8List bytes = await image.readAsBytes();
+      // ✅ STEP 1: Upload to Cloudinary
+      String? imageUrl = await CloudinaryService().uploadImage(image);
 
-      if (bytes.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Failed to read image."),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
+      if (imageUrl != null) {
+        String uid = FirebaseAuth.instance.currentUser!.uid;
 
-      if (bytes.length > 700000) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Image is too large. Max 700KB allowed."),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      setState(() {
-        _profileImageBytes = bytes;
-        _isImageUploading = true;
-        _uploadStatus = "Saving...";
-      });
-
-      String base64String = base64Encode(bytes);
-      String uid = FirebaseAuth.instance.currentUser!.uid;
-
-      await FirebaseFirestore.instance.collection('users').doc(uid).update({
-        'profileImageBase64': base64String,
-        'profileImage': "",
-        'imageUrl': "",
-      });
-
-      if (!widget.isAdmin && _userData!['gymId']!.isNotEmpty) {
-        try {
-          await FirebaseFirestore.instance
-              .collection('gyms')
-              .doc(_userData!['gymId'])
-              .collection('members')
-              .doc(uid)
-              .update({'profileImageBase64': base64String});
-        } catch (e) {
-          print("⚠️ Could not update gym members: $e");
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          _profileImageBase64 = base64String;
-          _isImageUploading = false;
-          _uploadStatus = "";
+        // ✅ STEP 2: Save URL in Firestore (No Base64!)
+        await FirebaseFirestore.instance.collection('users').doc(uid).update({
+          'profileImageBase64': FieldValue.delete(), // Delete old base64
+          'profileImageUrl': imageUrl, // Save new URL
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Profile image updated! ✅"),
-            backgroundColor: Colors.green,
-          ),
-        );
+
+        if (!widget.isAdmin && _userData!['gymId']!.isNotEmpty) {
+          try {
+            await FirebaseFirestore.instance
+                .collection('gyms')
+                .doc(_userData!['gymId'])
+                .collection('members')
+                .doc(uid)
+                .update({
+                  'profileImageBase64': FieldValue.delete(),
+                  'profileImageUrl': imageUrl,
+                });
+          } catch (e) {}
+        }
+
+        if (mounted) {
+          setState(() {
+            _profileImageBase64 = ""; // Clear local state
+            _profileImageUrl = imageUrl; // Add new local state
+            _isImageUploading = false;
+            _uploadStatus = "";
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Profile image updated! ✅"),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        throw Exception("Image upload failed");
       }
     } catch (e) {
       if (mounted) {
@@ -727,17 +714,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ==================== PROFILE IMAGE WIDGET ====================
   Widget _buildProfileImage() {
-    if (_profileImageBytes != null && _profileImageBytes!.isNotEmpty) {
-      return Image.memory(
-        _profileImageBytes!,
-        fit: BoxFit.cover,
-        width: 120,
-        height: 120,
-        errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
-      );
-    }
-    return _buildDefaultIcon();
+  // Priority 1: Cloudinary URL
+  if (_profileImageUrl.isNotEmpty) {
+    return Image.network(
+      _profileImageUrl,
+      fit: BoxFit.cover,
+      width: 120,
+      height: 120,
+      errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
+    );
   }
+  // Priority 2: Old Base64
+  if (_profileImageBytes != null && _profileImageBytes!.isNotEmpty) {
+    return Image.memory(
+      _profileImageBytes!,
+      fit: BoxFit.cover,
+      width: 120,
+      height: 120,
+      errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
+    );
+  }
+  // Priority 3: Default
+  return _buildDefaultIcon();
+}
 
   Widget _buildDefaultIcon() {
     return Container(

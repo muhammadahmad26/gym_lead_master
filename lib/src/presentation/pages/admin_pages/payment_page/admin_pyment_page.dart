@@ -426,148 +426,106 @@ class _AdminPymentPageState extends State<AdminPymentPage>
   //  SCREENSHOT DIALOG
   // ==========================================
   
-  void _showScreenshotDialog(String base64String) {
-    if (base64String.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("No screenshot uploaded"),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
+void _showScreenshotDialog(String imageUrl) {
+  if (imageUrl.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("No screenshot uploaded"), backgroundColor: Colors.orange),
+    );
+    return;
+  }
 
-    try {
-      Uint8List bytes = base64Decode(base64String);
+  // ✅ Check if it's a URL (Cloudinary) or old Base64
+  bool isUrl = imageUrl.startsWith('http');
 
-      showDialog(
-        context: context,
-        builder:
-            (context) => Dialog(
-              //  Constrain dialog size to screen
-              insetPadding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: const BoxDecoration(
-                      color: AppColors.DarkBlueGrey,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.receipt_long,
-                          color: Colors.white,
-                          size: 20,
+  showDialog(
+    context: context,
+    builder: (context) => Dialog(
+      insetPadding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: const BoxDecoration(
+              color: AppColors.DarkBlueGrey,
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.receipt_long, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                const Text("Payment Proof", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+          ),
+          Flexible(
+            child: Container(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.65),
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Container(
+                  width: double.infinity,
+                  color: Colors.grey[100],
+                  // ✅ Ternary Operator: Show Network Image for URL, Memory Image for Base64
+                  child: isUrl
+                      ? Image.network(
+                          imageUrl,
+                          fit: BoxFit.contain,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ));
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                                SizedBox(height: 8),
+                                Text("Failed to load image", style: TextStyle(color: Colors.red)),
+                              ],
+                            ));
+                          },
+                        )
+                      : Image.memory(
+                          base64Decode(imageUrl), // Fallback for old base64
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(child: Text("Invalid image data", style: TextStyle(color: Colors.red)));
+                          },
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          "Payment Proof",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const Spacer(),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white),
-                          onPressed: () => Navigator.pop(context),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Constrained + Zoomable Image
-                  Flexible(
-                    child: Container(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.65,
-                      ),
-                      child: InteractiveViewer(
-                        minScale: 0.5,
-                        maxScale: 4.0,
-                        child: Container(
-                          width: double.infinity,
-                          color: Colors.grey[100],
-                          child: Image.memory(
-                            bytes,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(20),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.broken_image,
-                                        size: 48,
-                                        color: Colors.grey,
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        "Failed to load image",
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Footer hint
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(12),
-                        bottomRight: Radius.circular(12),
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.zoom_out_map, size: 16, color: Colors.grey),
-                        SizedBox(width: 6),
-                        Text(
-                          "Pinch to zoom in/out",
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-      );
-    } catch (e) {
-      print("Error decoding Base64 image: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Error displaying image"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
+          ),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: Colors.grey[100], borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12))),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.zoom_out_map, size: 16, color: Colors.grey),
+                SizedBox(width: 6),
+                Text("Pinch to zoom in/out", style: TextStyle(fontSize: 12, color: Colors.grey)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   // ==========================================
   // SETTINGS BOTTOM SHEET

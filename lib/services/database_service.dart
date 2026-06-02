@@ -377,7 +377,7 @@ class DatabaseService {
     required String paymentMethodLabel,
     required String accountTitle,
     required String accountNumber,
-    required String screenshotBase64, // Changed from URL to Base64
+    required String screenshotUrl,// Changed from URL to Base64
   }) async {
     try {
       print("STEP 6: Updating payment doc to PENDING...");
@@ -392,7 +392,7 @@ class DatabaseService {
         'paymentMethodLabel': paymentMethodLabel,
         'accountTitle': accountTitle,
         'accountNumber': accountNumber,
-        'screenshotUrl': screenshotBase64, // Save Base64 string in Firestore
+        'screenshotUrl': screenshotUrl, // Save Base64 string in Firestore
         'status': 'pending',
         'submittedAt': FieldValue.serverTimestamp(),
       });

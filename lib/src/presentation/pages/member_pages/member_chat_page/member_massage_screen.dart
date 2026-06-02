@@ -107,6 +107,7 @@ class _MemberMessageScreenState extends State<MemberMessageScreen> {
                           receiverUid: uid,
                           receiverName: userData['name'] ?? 'Unknown',
                           receiverImageBase64: userData['profileImageBase64'] ?? '',
+                          receiverImageUrl: userData['profileImageUrl'] ?? '', 
                         ),
                       ));
                     },

@@ -41,7 +41,7 @@ class AuthService {
         'role': 'admin',
         'gymId': gymId,
         'location': location,
-        'profileImageBase64': '',
+          'profileImageUrl': '',
       });
 
       return null;
@@ -82,7 +82,7 @@ class AuthService {
             'membershipStatus': 'not_paid',
             'lastVisit': null,
             'gymId': gymId,
-            'profileImageBase64': '',
+            'profileImageUrl': '',
             'location': location,
           });
 
@@ -92,7 +92,7 @@ class AuthService {
         'name': name,
         'role': role,
         'gymId': gymId,
-        'profileImageBase64': '',
+          'profileImageUrl': '',
         'location': location,
       });
 

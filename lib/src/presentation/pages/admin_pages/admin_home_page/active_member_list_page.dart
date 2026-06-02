@@ -157,9 +157,10 @@ class _ActiveMemberListPageState extends State<ActiveMemberListPage> {
                           child: ListTile(
                             //Show profile picture from Base64
                             leading: _buildProfileAvatar(
-                              memberData['profileImageBase64'] ?? '',
-                              radius: 22,
-                            ),
+  imageUrl: memberData['profileImageUrl'] ?? '',
+  base64Image: memberData['profileImageBase64'] ?? '',
+  radius: 22,
+),
                             title: Text(
                               memberData['name'] ?? "Unknown",
                               style: const TextStyle(
@@ -198,32 +199,41 @@ class _ActiveMemberListPageState extends State<ActiveMemberListPage> {
     );
   }
 
-  //Profile avatar builder — shows Base64 image or default icon
-  Widget _buildProfileAvatar(String? base64Image, {double radius = 22}) {
-    if (base64Image != null && base64Image.isNotEmpty) {
-      try {
-        return CircleAvatar(
-          radius: radius,
-          backgroundColor: Colors.grey[300],
-          backgroundImage: MemoryImage(base64Decode(base64Image)),
-        );
-      } catch (e) {
-        // If Base64 decoding fails, show default icon
-        return CircleAvatar(
-          radius: radius,
-          backgroundColor: Colors.grey[300],
-          child: Icon(Icons.person, size: radius, color: Colors.grey[600]),
-        );
-      }
-    }
-    //  No image uploaded — show default person icon
+Widget _buildProfileAvatar({String? imageUrl, String? base64Image, double radius = 25}) {
+  // Priority 1: Cloudinary URL (New fast way)
+  if (imageUrl != null && imageUrl.isNotEmpty) {
     return CircleAvatar(
       radius: radius,
       backgroundColor: Colors.grey[300],
-      child: Icon(Icons.person, size: radius, color: Colors.grey[600]),
+      backgroundImage: NetworkImage(imageUrl),
+      onBackgroundImageError: (_, __) {}, // Prevent red screen if URL fails
     );
   }
+  
+  // Priority 2: Old Base64 (Fallback for old users)
+  if (base64Image != null && base64Image.isNotEmpty) {
+    try {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.grey[300],
+        backgroundImage: MemoryImage(base64Decode(base64Image)),
+      );
+    } catch (e) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.grey[300],
+        child: Icon(Icons.person, size: radius, color: Colors.grey[600]),
+      );
+    }
+  }
 
+  // Priority 3: Default Icon
+  return CircleAvatar(
+    radius: radius,
+    backgroundColor: Colors.grey[300],
+    child: Icon(Icons.person, size: radius, color: Colors.grey[600]),
+  );
+}
   Stream<QuerySnapshot> _getActiveMembersStream() {
     DateTime now = DateTime.now();
     DateTime startOfDay = DateTime(now.year, now.month, now.day);
