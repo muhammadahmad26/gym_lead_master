@@ -33,7 +33,7 @@ class NotificationBell extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          print("⚠️ NotificationBell error: ${snapshot.error}");
+          print("NotificationBell error: ${snapshot.error}");
           return IconButton(
             onPressed: () {
               Navigator.push(

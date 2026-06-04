@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
+import 'package:gym_lead_master/src/core/utils/app_responsive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ActiveMemberListPage extends StatefulWidget {
@@ -49,56 +51,55 @@ class _ActiveMemberListPageState extends State<ActiveMemberListPage> {
     }
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
-      body: AppBackGroundPage(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0),
-              child: Column(
-                children: [
-                  FractionallySizedBox(
-                    widthFactor: 0.2,
-                    child: Image.asset(
-                      AppImages.appLogoIcon,
-                      fit: BoxFit.contain,
+            body: AppBackGroundPage(
+        child: AnnotatedRegion<SystemUiOverlayStyle>( 
+          value: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + AppResponsive.padding(context, 10), // Status bar height + 10
+                ),
+                // ... baaki code waisa hi ...
+                child: Column(
+                  children: [
+                    FractionallySizedBox(
+                      widthFactor: 0.2,
+                      child: Image.asset(AppImages.appLogoIcon, fit: BoxFit.contain),
                     ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 10.0),
-                    child: Text(
-                      "Pro Fitness Gym",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 25,
-                        color: Colors.white,
+                    const Padding(
+                      padding: EdgeInsets.only(top: 10.0),
+                      child: Text(
+                        "Pro Fitness Gym",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.white),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Text(
-                'Active Members (Live)',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  ],
                 ),
               ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: StreamBuilder<QuerySnapshot>(
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text(
+                  'Active Members (Live)',
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: StreamBuilder<QuerySnapshot>(
+                    // ... baaki stream builder code waisa hi rahega ...
                   stream: _getActiveMembersStream(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -195,6 +196,7 @@ class _ActiveMemberListPageState extends State<ActiveMemberListPage> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

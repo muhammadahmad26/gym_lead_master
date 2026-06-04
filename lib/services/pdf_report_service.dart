@@ -25,7 +25,7 @@ class PdfReportService {
       _regularFont = pw.Font.ttf(regularData);
       _boldFont = pw.Font.ttf(boldData);
     } catch (e) {
-      print("⚠️ Custom fonts not found, using default: $e");
+      print("Custom fonts not found, using default: $e");
       _regularFont = pw.Font.helvetica();
       _boldFont = pw.Font.helvetica();
     }

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,7 +12,6 @@ import 'package:gym_lead_master/src/data/models/membership_plan_model.dart';
 import 'package:gym_lead_master/src/data/models/payment_model.dart';
 import 'package:gym_lead_master/src/data/models/transaction_model.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
@@ -136,10 +135,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
   }
 
   // ==========================================
-  // COMPLETELY FIXED: Submit Payment with Timeout + Progress
-  // ==========================================
-  // ==========================================
-  // FIXED: Submit Payment using BASE64 (No Storage Needed)
+  // FIXED: Submit Payment using Direct Bytes (No path_provider needed)
   // ==========================================
   Future<void> _submitPayment() async {
     if (_selectedPlanId == null) {
@@ -177,7 +173,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
     });
 
     try {
-      // Find NOT_PAID transaction
+      // STEP 1: Find NOT_PAID transaction
       print("STEP 1: Finding NOT_PAID transaction...");
       DocumentReference? notPaidRef = await _dbService
           .findOrCreateNotPaidTransaction(_gymId, _memberId)
@@ -205,45 +201,53 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
         return;
       }
 
-    //  Convert bytes to XFile and Upload to Cloudinary
-    setState(() { _loadingMessage = "Uploading to cloud..."; _uploadProgress = 0.5; });
-
-     
-      // Create a temporary XFile from bytes
-    String tempPath = (await getTemporaryDirectory()).path + '/payment_screenshot.jpg';
-    File tempFile = File(tempPath);
-    await tempFile.writeAsBytes(_imageBytes!);
-    XFile imageFile = XFile(tempPath);
-    
-    String? screenshotUrl = await CloudinaryService().uploadImage(imageFile);
-    
-    if (screenshotUrl == null) {
-      throw Exception("Screenshot upload failed. Please try again.");
-    }
-
-      // STEP 3: Update payment in Firestore
+      // STEP 2: Upload Image Bytes directly to Cloudinary
       setState(() {
-        _loadingMessage = "Finalizing...";
+        _loadingMessage = "Uploading screenshot to cloud...";
+        _uploadProgress = 0.5;
+      });
+
+      print("STEP 2: Uploading bytes directly to Cloudinary...");
+
+      // ✅ FIX: Directly upload bytes, NO temporary file needed
+      String? screenshotUrl = await CloudinaryService().uploadBytes(
+        _imageBytes!,
+        fileName: 'payment_${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
+
+      if (screenshotUrl == null) {
+        throw Exception("Screenshot upload failed. Please try again.");
+      }
+
+      // STEP 3: Update payment in Firestore with URL
+      setState(() {
+        _loadingMessage = "Finalizing payment...";
         _uploadProgress = 0.8;
       });
 
+      print("STEP 3: Updating payment doc to PENDING...");
 
-
-     String result = await _dbService.submitPayment(
-      gymId: _gymId,
-      paymentDocRef: notPaidRef,
-      planId: _selectedPlanId!,
-      planName: _selectedPlanName!,
-      amount: _selectedPlanPrice,
-      duration: _selectedPlanDuration,
-      paymentMethodId: _selectedMethodId!,
-      paymentMethodType: _selectedMethodType!,
-      paymentMethodLabel: _selectedMethodLabel!,
-      accountTitle: _selectedAccountTitle!,
-      accountNumber: _selectedAccountNumber!,
-      screenshotUrl: screenshotUrl, // ✅ Pass URL instead of Base64
-    ).timeout(const Duration(seconds: 15), onTimeout: () { throw TimeoutException('Saving payment details timed out'); });
-
+      String result = await _dbService
+          .submitPayment(
+            gymId: _gymId,
+            paymentDocRef: notPaidRef,
+            planId: _selectedPlanId!,
+            planName: _selectedPlanName!,
+            amount: _selectedPlanPrice,
+            duration: _selectedPlanDuration,
+            paymentMethodId: _selectedMethodId!,
+            paymentMethodType: _selectedMethodType!,
+            paymentMethodLabel: _selectedMethodLabel!,
+            accountTitle: _selectedAccountTitle!,
+            accountNumber: _selectedAccountNumber!,
+            screenshotUrl: screenshotUrl, // ✅ Cloudinary URL save hoga
+          )
+          .timeout(
+            const Duration(seconds: 15),
+            onTimeout: () {
+              throw TimeoutException('Saving payment details timed out');
+            },
+          );
 
       if (result == "success") {
         print("STEP 4: Payment submitted successfully!");
@@ -266,7 +270,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Payment Submitted Successfully!"),
+            content: Text("Payment Submitted Successfully! ✅"),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 3),
           ),
@@ -297,7 +301,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
         SnackBar(
           content: Text("Error: $e"),
           backgroundColor: Colors.red,
-          duration: Duration(seconds: 4),
+          duration: const Duration(seconds: 4),
         ),
       );
     }

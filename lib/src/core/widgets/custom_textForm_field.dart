@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gym_lead_master/src/core/utils/app_responsive.dart'; // ✅ Import
 
 class CustomTextFormField extends StatelessWidget {
   final String? icon_asset;
@@ -27,40 +28,36 @@ class CustomTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var Size(:width, :height) = MediaQuery.sizeOf(context);
+    var Size(:width) = MediaQuery.sizeOf(context);
     return SizedBox(
       width: width * 0.9,
-      // height: height * 0.07,
       child: TextFormField(
         controller: controller,
         obscureText: obsecuretext,
         keyboardType: keyboardType,
         validator: validator,
-        // onChanged: (value) => ,
-        // autovalidateMode: AutovalidateMode.onUserInteraction,
+        style: AppResponsive.textStyle(context, fontSize: 14), // Responsive Input Text
         decoration: InputDecoration(
           isDense: true,
-          label: FittedBox(
+          label: FittedBox( // Label ab kabhi cut nahi hoga
             child: Text(
               label,
-              style: const TextStyle(fontSize: 16, color: Colors.black),
+              style: AppResponsive.textStyle(context, fontSize: 14, color: Colors.black54),
             ),
           ),
           errorMaxLines: 2,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          errorStyle: const TextStyle(color: Colors.red, fontSize: 10),
-          prefixIcon:
-              prefixIconWidget ??
-              (icon_asset != null
-                  ? Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Image.asset(icon_asset!, fit: BoxFit.cover),
-                  )
-                  : null),
+          errorStyle: AppResponsive.textStyle(context, fontSize: 10, color: Colors.red),
+          prefixIcon: prefixIconWidget ?? (icon_asset != null
+              ? Padding(
+                  padding: EdgeInsets.all(AppResponsive.padding(context, 10)), // Responsive
+                  child: Image.asset(icon_asset!, fit: BoxFit.cover),
+                )
+              : null),
           suffixIcon: suffixIcon,
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 16,
-            horizontal: 12,
+          contentPadding: EdgeInsets.symmetric(
+            vertical: AppResponsive.padding(context, 14), // Responsive
+            horizontal: AppResponsive.padding(context, 12), // Responsive
           ),
         ),
       ),

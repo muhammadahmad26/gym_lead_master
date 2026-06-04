@@ -77,7 +77,7 @@ class DatabaseService {
       }
 
       // ==========================================
-      // STEP 2: Update stats (NO transaction - Web safe)
+    
       // Uses FieldValue.increment which is ATOMIC in Firestore
       // ==========================================
       List<String> activeExercises =
@@ -306,7 +306,7 @@ class DatabaseService {
         var data = doc.data() as Map<String, dynamic>;
         String status = data['status'] ?? '';
         if (status == 'pending') {
-          print("⚠️ Member has PENDING payment. Cannot create new.");
+          print("Member has PENDING payment. Cannot create new.");
           return null; // Signal that payment is already pending
         }
       }
@@ -324,7 +324,7 @@ class DatabaseService {
           memberEmail = userDoc.data()?['email'] ?? '';
         }
       } catch (e) {
-        print("⚠️ Could not fetch user details: $e");
+        print("Could not fetch user details: $e");
       }
 
       DocumentReference newDocRef = await _firestore

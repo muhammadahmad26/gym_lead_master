@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_lead_master/services/database_service.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
+import 'package:gym_lead_master/src/core/utils/app_responsive.dart';
 import 'package:gym_lead_master/src/data/models/membership_plan_model.dart';
 import 'package:gym_lead_master/src/data/models/payment_model.dart';
 import 'package:gym_lead_master/src/data/models/transaction_model.dart';
@@ -259,41 +260,31 @@ class _AdminPymentPageState extends State<AdminPymentPage>
               ),
 
             //  Action Buttons for PENDING
+                        // Action Buttons for PENDING
             if (txn.status == TransactionStatus.pending) ...[
               const SizedBox(height: 10),
-              Row(
+              Wrap( //Wrap use kiya hai, agar screen chhoti hogi toh buttons neeche aa jayenge, overlap nahi karenge
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.spaceEvenly,
                 children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _showScreenshotDialog(txn.screenshotUrl),
-                      icon: const Icon(Icons.image, size: 18),
-                      label: const Text("View Proof"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.DarkBlueGrey,
-                      ),
-                    ),
+                  ElevatedButton.icon(
+                    onPressed: () => _showScreenshotDialog(txn.screenshotUrl),
+                    icon: Icon(Icons.image, size: AppResponsive.iconSize(context, 16)),
+                    label: Text("View Proof", style: AppResponsive.textStyle(context, fontSize: 12, color: Colors.white)),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.DarkBlueGrey, padding: EdgeInsets.symmetric(horizontal: AppResponsive.padding(context, 10), vertical: 8)),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _approvePayment(txn.id, txn.memberId),
-                      icon: const Icon(Icons.check, size: 18),
-                      label: const Text("Approve"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                      ),
-                    ),
+                  ElevatedButton.icon(
+                    onPressed: () => _approvePayment(txn.id, txn.memberId),
+                    icon: Icon(Icons.check, size: AppResponsive.iconSize(context, 16)),
+                    label: Text("Approve", style: AppResponsive.textStyle(context, fontSize: 12, color: Colors.white)),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green, padding: EdgeInsets.symmetric(horizontal: AppResponsive.padding(context, 10), vertical: 8)),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _rejectPayment(txn.id, txn.memberId),
-                      icon: const Icon(Icons.close, size: 18),
-                      label: const Text("Reject"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
-                    ),
+                  ElevatedButton.icon(
+                    onPressed: () => _rejectPayment(txn.id, txn.memberId),
+                    icon: Icon(Icons.close, size: AppResponsive.iconSize(context, 16)),
+                    label: Text("Reject", style: AppResponsive.textStyle(context, fontSize: 12, color: Colors.white)),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: EdgeInsets.symmetric(horizontal: AppResponsive.padding(context, 10), vertical: 8)),
                   ),
                 ],
               ),

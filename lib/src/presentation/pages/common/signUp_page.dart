@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gym_lead_master/services/auth_service.dart';
 import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
+import 'package:gym_lead_master/src/core/utils/app_responsive.dart'; // ✅ Import
 import 'package:gym_lead_master/src/core/utils/email_validator.dart';
 import 'package:gym_lead_master/src/core/utils/password_validator.dart';
 import 'package:gym_lead_master/src/core/widgets/app_button.dart';
@@ -98,7 +99,6 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     var Size(:width, :height) = MediaQuery.sizeOf(context);
-    final SizedBox sizedBoxCustom = SizedBox(height: height * 0.02);
 
     return Stack(
       children: [
@@ -110,46 +110,22 @@ class _SignUpPageState extends State<SignUpPage> {
                 padding: EdgeInsets.symmetric(horizontal: width * 0.05),
                 child: Column(
                   children: [
-                    SizedBox(height: height * 0.05),
-
-                    // SAME AS LOGIN: App Logo at top
+                    SizedBox(height: height * 0.04),
                     Image.asset(
                       AppImages.appLogoIcon,
-                      height: height * 0.15,
-                      width: width * 0.30,
+                      height: height * 0.12,
+                      width: width * 0.25,
                     ),
-                    SizedBox(height: height * 0.02),
-
-                    // SAME AS LOGIN: Professional container with gradient, border, shadow
+                    SizedBox(height: height * 0.01),
                     Container(
-                      padding: EdgeInsets.all(width * 0.05),
+                      padding: EdgeInsets.all(width * 0.04),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            const Color.fromARGB(
-                              255,
-                              104,
-                              119,
-                              126,
-                            ).withOpacity(0.2),
-                            const Color.fromARGB(
-                              255,
-                              176,
-                              196,
-                              222,
-                            ).withOpacity(0.2),
-                            const Color.fromARGB(
-                              255,
-                              255,
-                              255,
-                              255,
-                            ).withOpacity(0.2),
-                            const Color.fromARGB(
-                              255,
-                              255,
-                              255,
-                              255,
-                            ).withOpacity(0.2),
+                            const Color(0xFF68777C).withOpacity(0.2),
+                            const Color(0xFFB0C4DE).withOpacity(0.2),
+                            const Color(0xFFFFFFFF).withOpacity(0.2),
+                            const Color(0xFFFFFFFF).withOpacity(0.2),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -176,21 +152,20 @@ class _SignUpPageState extends State<SignUpPage> {
                                 : AutovalidateMode.disabled,
                         child: Column(
                           children: [
-                            // SAME AS LOGIN: Title
                             Text(
                               widget.isAdmin
                                   ? 'Admin Sign Up'
                                   : 'Member Sign Up',
-                              style: const TextStyle(
-                                fontSize: 30,
+                              style: AppResponsive.textStyle(
+                                context,
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black87,
-                              ),
+                              ), // ✅ Responsive
                             ),
-
-                            SizedBox(height: height * 0.03),
-
-                            // Name
+                            SizedBox(
+                              height: AppResponsive.padding(context, 16),
+                            ),
                             CustomTextFormField(
                               label: "Name",
                               controller: _nameController,
@@ -198,9 +173,9 @@ class _SignUpPageState extends State<SignUpPage> {
                               validator:
                                   (val) => val!.isEmpty ? "Required" : null,
                             ),
-                            sizedBoxCustom,
-
-                            // Email
+                            SizedBox(
+                              height: AppResponsive.padding(context, 10),
+                            ),
                             CustomTextFormField(
                               controller: _emailController,
                               validator: EmailValidator.validator,
@@ -208,17 +183,17 @@ class _SignUpPageState extends State<SignUpPage> {
                               label: 'Email',
                               keyboardType: TextInputType.emailAddress,
                             ),
-                            sizedBoxCustom,
-
-                            // Password
+                            SizedBox(
+                              height: AppResponsive.padding(context, 10),
+                            ),
                             PasswordField(
                               controller: _passwordController,
                               label: "Password",
                               validator: PasswordValidator.validator,
                             ),
-                            sizedBoxCustom,
-
-                            // Confirm Password
+                            SizedBox(
+                              height: AppResponsive.padding(context, 10),
+                            ),
                             PasswordField(
                               controller: _confirmPasswordController,
                               validator:
@@ -228,9 +203,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                           : null,
                               label: "Confirm Password",
                             ),
-                            sizedBoxCustom,
-
-                            // Gym ID
+                            SizedBox(
+                              height: AppResponsive.padding(context, 10),
+                            ),
                             CustomTextFormField(
                               controller: _gymIdController,
                               label:
@@ -241,9 +216,9 @@ class _SignUpPageState extends State<SignUpPage> {
                               validator:
                                   (val) => val!.isEmpty ? "Required" : null,
                             ),
-                            sizedBoxCustom,
-
-                            // Location
+                            SizedBox(
+                              height: AppResponsive.padding(context, 10),
+                            ),
                             CustomTextFormField(
                               controller: _locationController,
                               label: "Location",
@@ -251,9 +226,10 @@ class _SignUpPageState extends State<SignUpPage> {
                               validator:
                                   (val) => val!.isEmpty ? "Required" : null,
                             ),
-                            sizedBoxCustom,
+                            SizedBox(
+                              height: AppResponsive.padding(context, 10),
+                            ),
 
-                            // Role (Member only)
                             if (!widget.isAdmin)
                               DropdownButtonFormField<String>(
                                 value: _selectedRole,
@@ -261,7 +237,13 @@ class _SignUpPageState extends State<SignUpPage> {
                                     ['Gym Member', 'Trainer'].map((role) {
                                       return DropdownMenuItem(
                                         value: role,
-                                        child: Text(role),
+                                        child: Text(
+                                          role,
+                                          style: AppResponsive.textStyle(
+                                            context,
+                                            fontSize: 14,
+                                          ),
+                                        ),
                                       );
                                     }).toList(),
                                 onChanged:
@@ -269,19 +251,27 @@ class _SignUpPageState extends State<SignUpPage> {
                                         setState(() => _selectedRole = val!),
                                 decoration: InputDecoration(
                                   labelText: "Role",
+                                  labelStyle: AppResponsive.textStyle(
+                                    context,
+                                    fontSize: 14,
+                                  ),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(
+                                  contentPadding: EdgeInsets.symmetric(
                                     horizontal: 12,
-                                    vertical: 16,
-                                  ),
+                                    vertical: AppResponsive.padding(
+                                      context,
+                                      14,
+                                    ),
+                                  ), // ✅ Responsive
                                 ),
                               ),
+                            if (!widget.isAdmin)
+                              SizedBox(
+                                height: AppResponsive.padding(context, 10),
+                              ),
 
-                            if (!widget.isAdmin) sizedBoxCustom,
-
-                            // AS LOGIN: Button or Loading
                             isLoading
                                 ? const CircularProgressIndicator()
                                 : AppButton(
@@ -294,43 +284,43 @@ class _SignUpPageState extends State<SignUpPage> {
                                   },
                                   text: 'Sign Up',
                                 ),
+                            SizedBox(height: AppResponsive.padding(context, 8)),
 
-                            SizedBox(height: height * 0.01),
-
-                            // AS LOGIN: Sign In link
-                            //  Navigate to Login page instead of pop
-                            Padding(
-                              padding: const EdgeInsets.only(left: 75),
-                              child: RichText(
-                                text: TextSpan(
-                                  text: "Already have an account? ",
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: "Sign In",
-                                      style: TextStyle(
-                                        color: Colors.blueAccent.shade700,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                      recognizer:
-                                          TapGestureRecognizer()
-                                            ..onTap = () {
-                                              //  Navigate to login page properly
-                                              Navigator.pushNamedAndRemoveUntil(
-                                                context,
-                                                widget
-                                                    .route, // This IS the login route
-                                                (route) =>
-                                                    route.settings.name ==
-                                                    AppRoutes.initialPage,
-                                              );
-                                            },
+                            // ✅ Responsive Bottom Text
+                            FittedBox(
+                              child: Padding(
+                                padding: EdgeInsets.only(left: width * 0.1),
+                                child: RichText(
+                                  text: TextSpan(
+                                    text: "Already have an account? ",
+                                    style: AppResponsive.textStyle(
+                                      context,
+                                      fontSize: 13,
+                                      color: Colors.black,
                                     ),
-                                  ],
+                                    children: [
+                                      TextSpan(
+                                        text: "Sign In",
+                                        style: AppResponsive.textStyle(
+                                          context,
+                                          fontSize: 15,
+                                          color: Colors.blueAccent.shade700,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        recognizer:
+                                            TapGestureRecognizer()
+                                              ..onTap = () {
+                                                Navigator.pushNamedAndRemoveUntil(
+                                                  context,
+                                                  widget.route,
+                                                  (route) =>
+                                                      route.settings.name ==
+                                                      AppRoutes.initialPage,
+                                                );
+                                              },
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),

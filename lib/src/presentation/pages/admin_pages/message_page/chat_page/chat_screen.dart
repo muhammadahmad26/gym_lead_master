@@ -37,6 +37,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   // Local Deletion States
   List<String> _locallyDeletedIds = [];
   DateTime? _chatClearedTime;
+   Map<String, dynamic> _senderData = {};
+  
   @override
   void initState() {
     super.initState();
@@ -44,6 +46,31 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     chatRoomId = _dbService.getChatRoomId(currentUserId, widget.receiverUid);
     _dbService.markMessagesAsRead(widget.gymId, chatRoomId, currentUserId);
     _loadLocalData();
+    _loadSenderData(); // Call new method
+  }
+  Future<void> _loadSenderData() async {
+    try {
+      DocumentSnapshot senderDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .get();
+      
+      if (senderDoc.exists) {
+        // Safely read data as Map to avoid "field does not exist" crash
+        Map<String, dynamic>? data = senderDoc.data() as Map<String, dynamic>?;
+        
+        setState(() {
+          _senderData = {
+            'uid': currentUserId,
+            'name': data?['name'] ?? 'User',
+            'profileImageUrl': data?['profileImageUrl'] ?? '', // NEW field
+            'profileImageBase64': data?['profileImageBase64'] ?? '', // Fallback
+          };
+        });
+      }
+    } catch (e) {
+      print("Error loading sender data: $e");
+    }
   }
 
   Future<void> _loadLocalData() async {
@@ -60,27 +87,26 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     });
   }
 
-  Future<void> _sendMessage() async {
+    Future<void> _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
 
     String text = _messageController.text.trim();
     _messageController.clear();
 
-    DocumentSnapshot senderDoc =
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(currentUserId)
-            .get();
-    Map<String, dynamic> senderData = {
+    // FIX: Ab ye bar bar Firestore se data fetch nahi karega, _senderData use karega
+    // Agar _senderData empty hai (kisi reason load nahi hua), toh fallback use karo
+    Map<String, dynamic> senderData = _senderData.isNotEmpty ? _senderData : {
       'uid': currentUserId,
-      'name': senderDoc['name'] ?? 'User',
-      'profileImageBase64': senderDoc['profileImageBase64'] ?? '',
+      'name': 'User',
+      'profileImageUrl': '',
+      'profileImageBase64': '',
     };
 
     Map<String, dynamic> receiverData = {
       'uid': widget.receiverUid,
       'name': widget.receiverName,
-      'profileImageBase64': widget.receiverImageBase64,
+      'profileImageUrl': widget.receiverImageUrl, // NEW field
+      'profileImageBase64': widget.receiverImageBase64, // Fallback
     };
 
     await _dbService.sendMessage(
@@ -92,7 +118,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       receiverData: receiverData,
     );
   }
-
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -201,7 +226,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text("Chat cleared for you ✅"),
+                        content: Text("Chat cleared for you "),
                         backgroundColor: Colors.green,
                       ),
                     );
@@ -279,7 +304,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Center(
-                    child: Text("No messages yet. Say Hi! 👋"),
+                    child: Text("No messages yet. Say Hi! "),
                   );
                 }
 
@@ -310,7 +335,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
                 if (messages.isEmpty) {
                   return const Center(
-                    child: Text("No messages yet. Say Hi! 👋"),
+                    child: Text("No messages yet. Say Hi!"),
                   );
                 }
 

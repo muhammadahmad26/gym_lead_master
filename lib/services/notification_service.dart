@@ -93,7 +93,7 @@ class NotificationService {
     }
   }
 
-  // FIX: Only orderBy — NO where clause = NO composite index needed
+
   // Filter isDeleted CLIENT-SIDE (same pattern as DatabaseService payments)
   Stream<QuerySnapshot> getAdminNotifications(String gymId) {
     return _firestore
@@ -108,7 +108,7 @@ class NotificationService {
   /// Cascade Soft-Delete: Admin deletes → synced to all members
   Future<void> deleteAdminNotification(String gymId, String notifId) async {
     try {
-      print("🗑️ Starting cascade soft-delete for notifId: $notifId");
+      print("Starting cascade soft-delete for notifId: $notifId");
 
       // STEP 1: Soft-delete the gym notification
       await _firestore
