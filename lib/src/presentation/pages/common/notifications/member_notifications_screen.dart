@@ -238,6 +238,7 @@ class _MemberNotificationsScreenState extends State<MemberNotificationsScreen> {
           // ✅ TAP TO READ FULL NOTIFICATION
           onTap: () async {
             if (!notif.isRead) {
+              // ignore: empty_catches
               try { await _notifService.markAsRead(userId, notif.id); } catch (e) {}
             }
             Navigator.push(context, MaterialPageRoute(

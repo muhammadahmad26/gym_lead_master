@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/profile_page/widgets/gym_status_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -84,7 +83,11 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     await prefs.clear();
 
     if (mounted) {
-      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.loginChooserPage,
+        (route) => false,
+      );
     }
   }
 

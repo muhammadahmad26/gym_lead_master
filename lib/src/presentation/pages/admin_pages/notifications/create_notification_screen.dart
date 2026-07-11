@@ -20,8 +20,14 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
   final TextEditingController _msgCtrl = TextEditingController();
   NotificationType _selectedType = NotificationType.general;
   String _sendTo = 'all'; // 'all' or specific userIds
-  List<String> _selectedUserIds = [];
+  final List<String> _selectedUserIds = [];
   bool _isSending = false;
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _msgCtrl.dispose();
+    super.dispose();
+  }
 
   Future<void> _sendNotification() async {
     if (!_formKey.currentState!.validate()) return;

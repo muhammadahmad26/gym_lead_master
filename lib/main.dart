@@ -16,7 +16,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:gym_lead_master/src/presentation/pages/member_pages/member_chat_page/member_massage_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/member_pages/member_home_page/member_home_page.dart';
-import 'package:gym_lead_master/src/presentation/pages/splash_page/splash_screen.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRouter.dart';
 
 void main() async {
@@ -72,9 +71,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       initialRoute: '/',
-      onGenerateRoute: AppRouter.generateRoute, // Using your existing router
-      
-      home: const SplashScreen(),
+      onGenerateRoute: AppRouter.generateRoute,
     );
   }
 }

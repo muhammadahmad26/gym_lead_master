@@ -48,6 +48,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _loadLocalData();
     _loadSenderData(); // Call new method
   }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
   Future<void> _loadSenderData() async {
     try {
       DocumentSnapshot senderDoc = await FirebaseFirestore.instance

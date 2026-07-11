@@ -143,8 +143,9 @@ class _ActiveMemberListPageState extends State<ActiveMemberListPage> {
                         List<dynamic> exercises =
                             memberData['currentExercises'] ?? [];
                         String exerciseString = exercises.join(", ");
-                        if (exerciseString.isEmpty)
+                        if (exerciseString.isEmpty) {
                           exerciseString = "General Workout";
+                        }
 
                         return Card(
                           elevation: 2.0,

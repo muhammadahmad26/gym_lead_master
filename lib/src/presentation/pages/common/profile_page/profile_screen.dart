@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -53,6 +52,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _loadUserData();
     _loadSettings();
+  }
+    @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _locationController.dispose();
+    _currentPassController.dispose();
+    _newPassController.dispose();
+    _confirmPassController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUserData() async {
@@ -149,6 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'profileImageBase64': FieldValue.delete(),
                   'profileImageUrl': imageUrl,
                 });
+          // ignore: empty_catches
           } catch (e) {}
         }
 
@@ -263,6 +273,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               'name': _nameController.text.trim(),
               'location': _locationController.text.trim(),
             });
+      // ignore: empty_catches
       } catch (e) {}
     }
 
@@ -316,6 +327,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             .collection('members')
             .doc(uid)
             .update({'location': _locationController.text.trim()});
+      // ignore: empty_catches
       } catch (e) {}
     }
 
@@ -327,8 +339,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _changePassword() async {
-    if (_currentPassController.text.isEmpty || _newPassController.text.isEmpty)
+    if (_currentPassController.text.isEmpty || _newPassController.text.isEmpty) {
       return;
+    }
     if (_newPassController.text != _confirmPassController.text) {
       ScaffoldMessenger.of(
         context,

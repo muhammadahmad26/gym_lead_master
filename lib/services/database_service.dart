@@ -489,6 +489,7 @@ class DatabaseService {
         memberName = userDoc.data()?['name'] ?? '';
         memberEmail = userDoc.data()?['email'] ?? '';
       }
+    // ignore: empty_catches
     } catch (e) {}
 
     await _firestore.collection('gyms').doc(gymId).collection('payments').add({

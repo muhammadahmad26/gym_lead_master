@@ -16,37 +16,60 @@ class AuthService {
     required String gymId,
     required String location,
   }) async {
+    UserCredential? credential;
     try {
       final gymDoc = await _firestore.collection('gyms').doc(gymId).get();
       if (gymDoc.exists) return "Gym ID already registered.";
 
-      UserCredential credential = await _auth.createUserWithEmailAndPassword(
+      credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      await _firestore.collection('gyms').doc(gymId).set({
-        'gymId': gymId,
-        'adminId': credential.user!.uid,
-        'gymName': name,
-        'location': location,
-        'createdAt': FieldValue.serverTimestamp(),
-        'status': 'active',
-      });
+      try {
+        await _firestore.collection('gyms').doc(gymId).set({
+          'gymId': gymId,
+          'adminId': credential.user!.uid,
+          'gymName': name,
+          'location': location,
+          'createdAt': FieldValue.serverTimestamp(),
+          'status': 'active',
+        });
 
-      await _firestore.collection('users').doc(credential.user!.uid).set({
-        'uid': credential.user!.uid,
-        'email': email,
-        'name': name,
-        'role': 'admin',
-        'gymId': gymId,
-        'location': location,
+        await _firestore.collection('users').doc(credential.user!.uid).set({
+          'uid': credential.user!.uid,
+          'email': email,
+          'name': name,
+          'role': 'admin',
+          'gymId': gymId,
+          'location': location,
           'profileImageUrl': '',
-      });
+        });
+      } catch (e) {
+        // Firestore write failed after Auth account was created.
+        // Roll back the orphaned Auth user so the person can retry signup cleanly.
+        await _rollbackAuthUser(credential.user);
+        return "Failed to save your gym data. Please try signing up again.";
+      }
 
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
+    } catch (e) {
+      if (credential?.user != null) {
+        await _rollbackAuthUser(credential!.user);
+      }
+      return "Something went wrong. Please try again.";
+    }
+  }
+
+  Future<void> _rollbackAuthUser(User? user) async {
+    if (user == null) return;
+    try {
+      await user.delete();
+    } catch (_) {
+      // Deletion can fail (e.g. requires-recent-login). Nothing more we can
+      // safely do here without blocking the user; logged for follow-up.
     }
   }
 
@@ -59,75 +82,88 @@ class AuthService {
     required String role,
     required String location,
   }) async {
+    UserCredential? credential;
     try {
       final gymDoc = await _firestore.collection('gyms').doc(gymId).get();
       if (!gymDoc.exists) return "Invalid Gym ID.";
 
-      UserCredential credential = await _auth.createUserWithEmailAndPassword(
+      credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      await _firestore
-          .collection('gyms')
-          .doc(gymId)
-          .collection('members')
-          .doc(credential.user!.uid)
-          .set({
-            'uid': credential.user!.uid,
-            'name': name,
-            'email': email,
-            'role': role,
-            'joinDate': FieldValue.serverTimestamp(),
-            'membershipStatus': 'not_paid',
-            'lastVisit': null,
-            'gymId': gymId,
-            'profileImageUrl': '',
-            'location': location,
-          });
+      try {
+        await _firestore
+            .collection('gyms')
+            .doc(gymId)
+            .collection('members')
+            .doc(credential.user!.uid)
+            .set({
+              'uid': credential.user!.uid,
+              'name': name,
+              'email': email,
+              'role': role,
+              'joinDate': FieldValue.serverTimestamp(),
+              'membershipStatus': 'not_paid',
+              'lastVisit': null,
+              'gymId': gymId,
+              'profileImageUrl': '',
+              'location': location,
+            });
 
-      await _firestore.collection('users').doc(credential.user!.uid).set({
-        'uid': credential.user!.uid,
-        'email': email,
-        'name': name,
-        'role': role,
-        'gymId': gymId,
+        await _firestore.collection('users').doc(credential.user!.uid).set({
+          'uid': credential.user!.uid,
+          'email': email,
+          'name': name,
+          'role': role,
+          'gymId': gymId,
           'profileImageUrl': '',
-        'location': location,
-      });
+          'location': location,
+        });
 
-      //  NEW: Auto-create NOT_PAID transaction
-      await _firestore
-          .collection('gyms')
-          .doc(gymId)
-          .collection('payments')
-          .add({
-            'memberId': credential.user!.uid,
-            'memberName': name,
-            'memberEmail': email,
-            'gymId': gymId,
-            'planId': '',
-            'planName': 'No Plan Selected',
-            'amount': 0.0,
-            'duration': '',
-            'paymentMethodId': '',
-            'paymentMethodType': '',
-            'paymentMethodLabel': '',
-            'accountTitle': '',
-            'accountNumber': '',
-            'screenshotUrl': '',
-            'status': 'not_paid',
-            'createdAt': FieldValue.serverTimestamp(),
-            'submittedAt': null,
-            'approvedAt': null,
-            'rejectedAt': null,
-            'reviewedBy': '',
-            'rejectionReason': '',
-          });
+        //  NEW: Auto-create NOT_PAID transaction
+        await _firestore
+            .collection('gyms')
+            .doc(gymId)
+            .collection('payments')
+            .add({
+              'memberId': credential.user!.uid,
+              'memberName': name,
+              'memberEmail': email,
+              'gymId': gymId,
+              'planId': '',
+              'planName': 'No Plan Selected',
+              'amount': 0.0,
+              'duration': '',
+              'paymentMethodId': '',
+              'paymentMethodType': '',
+              'paymentMethodLabel': '',
+              'accountTitle': '',
+              'accountNumber': '',
+              'screenshotUrl': '',
+              'status': 'not_paid',
+              'createdAt': FieldValue.serverTimestamp(),
+              'submittedAt': null,
+              'approvedAt': null,
+              'rejectedAt': null,
+              'reviewedBy': '',
+              'rejectionReason': '',
+            });
+      } catch (e) {
+        // Firestore write failed after Auth account was created.
+        // Roll back the orphaned Auth user so the person can retry signup cleanly.
+        await _rollbackAuthUser(credential.user);
+        return "Failed to save your membership data. Please try signing up again.";
+      }
 
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
+    } catch (e) {
+      if (credential?.user != null) {
+        await _rollbackAuthUser(credential!.user);
+      }
+      return "Something went wrong. Please try again.";
     }
   }
 

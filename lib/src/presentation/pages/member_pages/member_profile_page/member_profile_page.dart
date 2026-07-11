@@ -1,4 +1,4 @@
-
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -31,23 +31,35 @@ class _MemberProfilePageState extends State<MemberProfilePage> {
   String _userRole = "Member";
   String _gymId = "gym_001";
 
+  StreamSubscription<DocumentSnapshot>? _userSub;
+
   @override
   void initState() {
     super.initState();
     _fetchUserData();
   }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _userSub?.cancel();
+    super.dispose();
+  }
+
   Future<void> _fetchUserData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() => _gymId = prefs.getString('gymId') ?? "gym_001");
 
-    FirebaseFirestore.instance
+    _userSub = FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .snapshots()
         .listen((snapshot) {
           if (snapshot.exists) {
             var data = snapshot.data() as Map<String, dynamic>;
+            if (!mounted) return;
             setState(() {
               _userName = data['name'] ?? "User";
               _userEmail = data['email'] ?? "No Email";

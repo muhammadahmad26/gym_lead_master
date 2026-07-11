@@ -10,6 +10,7 @@ import 'package:gym_lead_master/src/presentation/pages/common/profile_page/term_
 import 'package:gym_lead_master/src/presentation/pages/login_pages/gym_admin_login_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/login_pages/gym_member_login_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/splash_page/initial_pages.dart';
+import 'package:gym_lead_master/src/presentation/pages/splash_page/splash_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/member_pages/member_home_page/member_home_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/signUp_page/gym_Admin_signUp_Page.dart';
 import 'package:gym_lead_master/src/presentation/pages/signUp_page/gym_member_sigUp_page.dart';
@@ -19,6 +20,8 @@ class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.initialPage:
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
+      case AppRoutes.loginChooserPage:
         return MaterialPageRoute(builder: (_) => InitialPages());
       //  ------------------------- //
       case AppRoutes.gymAdminLogInPage:

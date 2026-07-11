@@ -235,8 +235,6 @@ class _GymMembersPageState extends State<GymMembersPage> {
                               String location = data['location'] ?? '';
                               String mStatus =
                                   data['membershipStatus'] ?? 'not_paid';
-                              String? profileBase64 =
-                                  data['profileImageBase64'];
 
                               String joinDateStr = "N/A";
                               if (data['joinDate'] != null) {

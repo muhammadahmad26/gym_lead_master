@@ -93,7 +93,7 @@ class _AvailablePlansCardState extends State<AvailablePlansCard> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
