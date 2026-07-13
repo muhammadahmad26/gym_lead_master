@@ -178,7 +178,7 @@ class _SplashScreenState extends State<SplashScreen>
         }
       }
     } catch (e) {
-      print("Splash auth error: $e");
+      debugPrint("Splash auth error: $e");
       // On error, go to login screen
       if (!_navigated) {
         _navigated = true;

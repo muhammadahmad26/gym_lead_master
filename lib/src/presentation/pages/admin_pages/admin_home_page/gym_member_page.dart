@@ -5,10 +5,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_lead_master/services/database_service.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/attendance/attendance_dashboard_screen.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/attendance/member_detail_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 class GymMembersPage extends StatefulWidget {
   const GymMembersPage({super.key});
@@ -152,14 +151,10 @@ class _GymMembersPageState extends State<GymMembersPage> {
                               Expanded(
                                 child: ElevatedButton.icon(
                                   onPressed: () {
-                                    Navigator.push(
+                                    Navigator.pushNamed(
                                       context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (_) => AttendanceDashboardScreen(
-                                              gymId: _gymId,
-                                            ),
-                                      ),
+                                      AppRoutes.attendanceDashboardPage,
+                                      arguments: {'gymId': _gymId},
                                     );
                                   },
                                   icon: const Icon(
@@ -235,6 +230,8 @@ class _GymMembersPageState extends State<GymMembersPage> {
                               String location = data['location'] ?? '';
                               String mStatus =
                                   data['membershipStatus'] ?? 'not_paid';
+                              String? profileBase64 =
+                                  data['profileImageBase64'];
 
                               String joinDateStr = "N/A";
                               if (data['joinDate'] != null) {
@@ -263,15 +260,13 @@ class _GymMembersPageState extends State<GymMembersPage> {
                               // Wrap card with GestureDetector for tap
                               return GestureDetector(
                                 onTap: () {
-                                  Navigator.push(
+                                  Navigator.pushNamed(
                                     context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (_) => MemberDetailScreen(
-                                            gymId: _gymId,
-                                            memberData: data,
-                                          ),
-                                    ),
+                                    AppRoutes.memberDetailPage,
+                                    arguments: {
+                                      'gymId': _gymId,
+                                      'memberData': data,
+                                    },
                                   );
                                 },
                                 child: Card(

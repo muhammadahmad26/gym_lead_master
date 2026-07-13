@@ -17,6 +17,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
   final TextEditingController emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+
   @override
   void dispose() {
     emailController.dispose();

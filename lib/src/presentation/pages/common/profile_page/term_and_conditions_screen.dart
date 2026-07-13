@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/profile_page/privacy_policy_screen.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 class TermsAndConditionsScreen extends StatefulWidget {
   const TermsAndConditionsScreen({super.key});
@@ -159,11 +159,9 @@ class _TermsAndConditionsScreenState extends State<TermsAndConditionsScreen> {
                     child: TextButton.icon(
                       onPressed: () {
                         // NEW: Navigate to Privacy Policy Screen
-                        Navigator.push(
+                        Navigator.pushNamed(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => const PrivacyPolicyScreen(),
-                          ),
+                          AppRoutes.privacyPolicyPage,
                         );
                       },
                       icon: const Icon(Icons.shield_outlined),

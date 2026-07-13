@@ -6,7 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_lead_master/services/database_service.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
-import 'package:gym_lead_master/src/core/utils/app_responsive.dart';
 import 'package:gym_lead_master/src/data/models/membership_plan_model.dart';
 import 'package:gym_lead_master/src/data/models/payment_model.dart';
 import 'package:gym_lead_master/src/data/models/transaction_model.dart';
@@ -118,7 +117,7 @@ class _AdminPymentPageState extends State<AdminPymentPage>
         }
 
         if (snapshot.hasError) {
-          print("Admin Payment List Error: ${snapshot.error}");
+          debugPrint("Admin Payment List Error: ${snapshot.error}");
           return Center(
             child: Text(
               "Error: ${snapshot.error}",
@@ -260,31 +259,41 @@ class _AdminPymentPageState extends State<AdminPymentPage>
               ),
 
             //  Action Buttons for PENDING
-                        // Action Buttons for PENDING
             if (txn.status == TransactionStatus.pending) ...[
               const SizedBox(height: 10),
-              Wrap( //Wrap use kiya hai, agar screen chhoti hogi toh buttons neeche aa jayenge, overlap nahi karenge
-                spacing: 8,
-                runSpacing: 8,
-                alignment: WrapAlignment.spaceEvenly,
+              Row(
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: () => _showScreenshotDialog(txn.screenshotUrl),
-                    icon: Icon(Icons.image, size: AppResponsive.iconSize(context, 16)),
-                    label: Text("View Proof", style: AppResponsive.textStyle(context, fontSize: 12, color: Colors.white)),
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.DarkBlueGrey, padding: EdgeInsets.symmetric(horizontal: AppResponsive.padding(context, 10), vertical: 8)),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _showScreenshotDialog(txn.screenshotUrl),
+                      icon: const Icon(Icons.image, size: 18),
+                      label: const Text("View Proof"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.DarkBlueGrey,
+                      ),
+                    ),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () => _approvePayment(txn.id, txn.memberId),
-                    icon: Icon(Icons.check, size: AppResponsive.iconSize(context, 16)),
-                    label: Text("Approve", style: AppResponsive.textStyle(context, fontSize: 12, color: Colors.white)),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green, padding: EdgeInsets.symmetric(horizontal: AppResponsive.padding(context, 10), vertical: 8)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _approvePayment(txn.id, txn.memberId),
+                      icon: const Icon(Icons.check, size: 18),
+                      label: const Text("Approve"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                      ),
+                    ),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () => _rejectPayment(txn.id, txn.memberId),
-                    icon: Icon(Icons.close, size: AppResponsive.iconSize(context, 16)),
-                    label: Text("Reject", style: AppResponsive.textStyle(context, fontSize: 12, color: Colors.white)),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: EdgeInsets.symmetric(horizontal: AppResponsive.padding(context, 10), vertical: 8)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _rejectPayment(txn.id, txn.memberId),
+                      icon: const Icon(Icons.close, size: 18),
+                      label: const Text("Reject"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -416,107 +425,168 @@ class _AdminPymentPageState extends State<AdminPymentPage>
   // ==========================================
   //  SCREENSHOT DIALOG
   // ==========================================
-  
-void _showScreenshotDialog(String imageUrl) {
-  if (imageUrl.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("No screenshot uploaded"), backgroundColor: Colors.orange),
-    );
-    return;
-  }
 
-  // ✅ Check if it's a URL (Cloudinary) or old Base64
-  bool isUrl = imageUrl.startsWith('http');
+  void _showScreenshotDialog(String imageUrl) {
+    if (imageUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("No screenshot uploaded"),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
-  showDialog(
-    context: context,
-    builder: (context) => Dialog(
-      insetPadding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: const BoxDecoration(
-              color: AppColors.DarkBlueGrey,
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
-            ),
-            child: Row(
+    // ✅ Check if it's a URL (Cloudinary) or old Base64
+    bool isUrl = imageUrl.startsWith('http');
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => Dialog(
+            insetPadding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.receipt_long, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                const Text("Payment Proof", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
-          ),
-          Flexible(
-            child: Container(
-              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.65),
-              child: InteractiveViewer(
-                minScale: 0.5,
-                maxScale: 4.0,
-                child: Container(
-                  width: double.infinity,
-                  color: Colors.grey[100],
-                  // ✅ Ternary Operator: Show Network Image for URL, Memory Image for Base64
-                  child: isUrl
-                      ? Image.network(
-                          imageUrl,
-                          fit: BoxFit.contain,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                  : null,
-                            ));
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Center(child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.broken_image, size: 48, color: Colors.grey),
-                                SizedBox(height: 8),
-                                Text("Failed to load image", style: TextStyle(color: Colors.red)),
-                              ],
-                            ));
-                          },
-                        )
-                      : Image.memory(
-                          base64Decode(imageUrl), // Fallback for old base64
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Center(child: Text("Invalid image data", style: TextStyle(color: Colors.red)));
-                          },
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: AppColors.DarkBlueGrey,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.receipt_long,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        "Payment Proof",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.grey[100], borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12))),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.zoom_out_map, size: 16, color: Colors.grey),
-                SizedBox(width: 6),
-                Text("Pinch to zoom in/out", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                Flexible(
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.65,
+                    ),
+                    child: InteractiveViewer(
+                      minScale: 0.5,
+                      maxScale: 4.0,
+                      child: Container(
+                        width: double.infinity,
+                        color: Colors.grey[100],
+                        // ✅ Ternary Operator: Show Network Image for URL, Memory Image for Base64
+                        child:
+                            isUrl
+                                ? Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.contain,
+                                  loadingBuilder: (
+                                    context,
+                                    child,
+                                    loadingProgress,
+                                  ) {
+                                    if (loadingProgress == null) return child;
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        value:
+                                            loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
+                                                : null,
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Center(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.broken_image,
+                                            size: 48,
+                                            color: Colors.grey,
+                                          ),
+                                          SizedBox(height: 8),
+                                          Text(
+                                            "Failed to load image",
+                                            style: TextStyle(color: Colors.red),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                )
+                                : Image.memory(
+                                  base64Decode(
+                                    imageUrl,
+                                  ), // Fallback for old base64
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Center(
+                                      child: Text(
+                                        "Invalid image data",
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    );
+                                  },
+                                ),
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(12),
+                      bottomRight: Radius.circular(12),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.zoom_out_map, size: 16, color: Colors.grey),
+                      SizedBox(width: 6),
+                      Text(
+                        "Pinch to zoom in/out",
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-        ],
-      ),
-    ),
-  );
-}
+    );
+  }
 
   // ==========================================
   // SETTINGS BOTTOM SHEET
@@ -621,8 +691,11 @@ void _showScreenshotDialog(String imageUrl) {
         ),
         ElevatedButton.icon(
           onPressed: () => _showAddPaymentMethodDialog(),
-          icon: const Icon(Icons.add),
-          label: const Text("Add Method"),
+          icon: const Icon(Icons.add,color: AppColors.whiteColor),
+          label: const Text(
+            "Add Method",
+            style: TextStyle(color: AppColors.whiteColor),
+          ),
           style: ElevatedButton.styleFrom(backgroundColor: AppColors.blueColor),
         ),
         const SizedBox(height: 20),
@@ -692,8 +765,8 @@ void _showScreenshotDialog(String imageUrl) {
         ),
         ElevatedButton.icon(
           onPressed: () => _showAddPlanDialog(),
-          icon: const Icon(Icons.add),
-          label: const Text("Add Plan"),
+          icon: const Icon(Icons.add,color: AppColors.whiteColor,),
+          label: const Text("Add Plan",style: TextStyle(color: AppColors.whiteColor),),
           style: ElevatedButton.styleFrom(backgroundColor: AppColors.blueColor),
         ),
         const SizedBox(height: 20),

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:gym_lead_master/services/attendance_service.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/data/models/attendance_model.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/attendance/attendance_month_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 import 'package:intl/intl.dart';
 
 class AttendanceDashboardScreen extends StatefulWidget {
@@ -52,9 +52,12 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
         });
       }
     } catch (e) {
-      print("Error loading summary: $e");
+      debugPrint("Error loading summary: $e");
       if (mounted) {
         setState(() => _isLoadingSummary = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Couldn't load today's summary: $e")),
+        );
       }
     }
   }
@@ -269,15 +272,11 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
           return b.month.compareTo(a.month);
         });
 
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
+        return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: months.length,
-          itemBuilder: (context, index) {
-            var month = months[index];
-            return _buildMonthCard(month);
-          },
+          child: Column(
+            children: months.map((month) => _buildMonthCard(month)).toList(),
+          ),
         );
       },
     );
@@ -291,18 +290,16 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: () {
-          Navigator.push(
+          Navigator.pushNamed(
             context,
-            MaterialPageRoute(
-              builder:
-                  (_) => AttendanceMonthScreen(
-                    gymId: widget.gymId,
-                    monthKey: month.id,
-                    monthLabel: month.monthLabel,
-                    year: month.year,
-                    monthNum: month.month,
-                  ),
-            ),
+            AppRoutes.attendanceMonthPage,
+            arguments: {
+              'gymId': widget.gymId,
+              'monthKey': month.id,
+              'monthLabel': month.monthLabel,
+              'year': month.year,
+              'monthNum': month.month,
+            },
           );
         },
         child: Padding(

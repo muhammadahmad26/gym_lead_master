@@ -58,7 +58,12 @@ class _MemeberHomePageState extends State<MemeberHomePage> {
             _checkMemberStatus();
           }
         } catch (e) {
-          print("Error fetching Gym ID: $e");
+          debugPrint("Error fetching Gym ID: $e");
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Couldn't load your gym info: $e")),
+            );
+          }
         }
       }
     }
@@ -107,7 +112,7 @@ class _MemeberHomePageState extends State<MemeberHomePage> {
         }
       }
     } catch (e) {
-      print("Error checking member status: $e");
+      debugPrint("Error checking member status: $e");
     }
   }
 

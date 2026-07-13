@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:async'; // For Timer
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/profile_page/privacy_policy_screen.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/profile_page/term_and_conditions_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 class AboutAppScreen extends StatefulWidget {
   const AboutAppScreen({super.key});
@@ -385,11 +384,9 @@ class _AboutAppScreenState extends State<AboutAppScreen>
                           title: const Text('Privacy Policy'),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
-                            Navigator.push(
+                            Navigator.pushNamed(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => const PrivacyPolicyScreen(),
-                              ),
+                              AppRoutes.privacyPolicyPage,
                             );
                           },
                         ),
@@ -402,12 +399,9 @@ class _AboutAppScreenState extends State<AboutAppScreen>
                           title: const Text('Terms & Conditions'),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
-                            Navigator.push(
+                            Navigator.pushNamed(
                               context,
-                              MaterialPageRoute(
-                                builder:
-                                    (_) => const TermsAndConditionsScreen(),
-                              ),
+                              AppRoutes.termsPage,
                             );
                           },
                         ),

@@ -5,8 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_lead_master/services/database_service.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/core/constants/app_bg_page.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/chat_page/chat_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 class AdminMessageScreen extends StatefulWidget {
   const AdminMessageScreen({super.key});
@@ -123,20 +123,18 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
                       currentUserId,
                     ),
                     onTap: () {
-                      Navigator.push(
+                      Navigator.pushNamed(
                         context,
-                        MaterialPageRoute(
-                          builder:
-                              (_) => ChatDetailScreen(
-                                gymId: _gymId,
-                                receiverUid: uid,
-                                receiverName: userData['name'] ?? 'Unknown',
-                                receiverImageBase64:
-                                    userData['profileImageBase64'] ?? '',
-                                    receiverImageUrl: userData['profileImageUrl'] ?? '',
-
-                              ),
-                        ),
+                        AppRoutes.chatDetailPage,
+                        arguments: {
+                          'gymId': _gymId,
+                          'receiverUid': uid,
+                          'receiverName': userData['name'] ?? 'Unknown',
+                          'receiverImageBase64':
+                              userData['profileImageBase64'] ?? '',
+                          'receiverImageUrl':
+                              userData['profileImageUrl'] ?? '',
+                        },
                       );
                     },
                   ),

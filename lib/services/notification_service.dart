@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -88,12 +89,12 @@ class NotificationService {
 
       await batch.commit();
     } catch (e) {
-      print("Error sending notification: $e");
+      debugPrint("Error sending notification: $e");
       rethrow;
     }
   }
 
-
+  // FIX: Only orderBy — NO where clause = NO composite index needed
   // Filter isDeleted CLIENT-SIDE (same pattern as DatabaseService payments)
   Stream<QuerySnapshot> getAdminNotifications(String gymId) {
     return _firestore
@@ -108,7 +109,7 @@ class NotificationService {
   /// Cascade Soft-Delete: Admin deletes → synced to all members
   Future<void> deleteAdminNotification(String gymId, String notifId) async {
     try {
-      print("Starting cascade soft-delete for notifId: $notifId");
+      debugPrint("🗑️ Starting cascade soft-delete for notifId: $notifId");
 
       // STEP 1: Soft-delete the gym notification
       await _firestore
@@ -120,7 +121,7 @@ class NotificationService {
         'isDeleted': true,
         'deletedAt': FieldValue.serverTimestamp(),
       });
-      print("Gym notification soft-deleted: $notifId");
+      debugPrint("Gym notification soft-deleted: $notifId");
 
       // STEP 2: Get all member UIDs for this gym
       QuerySnapshot membersSnap = await _firestore
@@ -130,7 +131,7 @@ class NotificationService {
           .get();
 
       List<String> memberUids = membersSnap.docs.map((doc) => doc.id).toList();
-      print("👥 Found ${memberUids.length} members to cascade delete");
+      debugPrint("👥 Found ${memberUids.length} members to cascade delete");
 
       // STEP 3: For each member, find and soft-delete matching notifications
       WriteBatch batch = _firestore.batch();
@@ -169,9 +170,9 @@ class NotificationService {
         await batch.commit();
       }
 
-      print("Cascade complete. Member notifications deleted: $totalDeleted");
+      debugPrint("Cascade complete. Member notifications deleted: $totalDeleted");
     } catch (e) {
-      print("Error in cascade soft-delete: $e");
+      debugPrint("Error in cascade soft-delete: $e");
       rethrow;
     }
   }
@@ -275,7 +276,7 @@ class NotificationService {
   // ==========================================
   Future<void> migrateOldNotifications(String gymId) async {
     try {
-      print("Starting notification migration for gym: $gymId");
+      debugPrint("Starting notification migration for gym: $gymId");
 
       // Migrate gym notifications
       QuerySnapshot gymNotifs = await _firestore
@@ -304,7 +305,7 @@ class NotificationService {
         }
       }
       if (count > 0) await batch.commit();
-      print("Migrated gym notifications");
+      debugPrint("Migrated gym notifications");
 
       // Migrate member notifications
       QuerySnapshot membersSnap = await _firestore
@@ -343,9 +344,9 @@ class NotificationService {
         if (count > 0) await batch.commit();
       }
 
-      print("Notification migration complete for gym: $gymId");
+      debugPrint("Notification migration complete for gym: $gymId");
     } catch (e) {
-      print("Migration error: $e");
+      debugPrint("Migration error: $e");
       rethrow;
     }
   }

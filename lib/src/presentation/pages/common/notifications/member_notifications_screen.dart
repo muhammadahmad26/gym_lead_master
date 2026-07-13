@@ -4,9 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/services/notification_service.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
-import 'package:gym_lead_master/src/core/utils/app_responsive.dart';
 import 'package:gym_lead_master/src/data/models/notification_model.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/notifications/notification_detail_screen.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class MemberNotificationsScreen extends StatefulWidget {
@@ -78,7 +76,7 @@ class _MemberNotificationsScreenState extends State<MemberNotificationsScreen> {
                 }
 
                 if (snapshot.hasError) {
-                  print("Member notification error: ${snapshot.error}");
+                  debugPrint("Member notification error: ${snapshot.error}");
                   return _buildErrorState(
                       "Error loading notifications.\n${snapshot.error}");
                 }
@@ -185,7 +183,7 @@ class _MemberNotificationsScreenState extends State<MemberNotificationsScreen> {
     );
   }
 
-    Widget _buildNotificationCard(AppNotification notif, String userId) {
+  Widget _buildNotificationCard(AppNotification notif, String userId) {
     bool isDeleting = _deletingNotifId == notif.id;
 
     if (isDeleting) {
@@ -195,9 +193,16 @@ class _MemberNotificationsScreenState extends State<MemberNotificationsScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-              SizedBox(width: AppResponsive.padding(context, 12)),
-              Text("Deleting notification...", style: AppResponsive.textStyle(context, fontSize: 13, color: Colors.grey[600])),
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                "Deleting notification...",
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
+              ),
             ],
           ),
         ),
@@ -217,12 +222,20 @@ class _MemberNotificationsScreenState extends State<MemberNotificationsScreen> {
         return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
             title: const Text("Delete Notification?"),
-            content: const Text("This notification will be removed from your list."),
+            content:
+                const Text("This notification will be removed from your list."),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
-              TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("Delete", style: TextStyle(color: Colors.red))),
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text("Cancel")),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text("Delete",
+                    style: TextStyle(color: Colors.red)),
+              ),
             ],
           ),
         );
@@ -231,71 +244,142 @@ class _MemberNotificationsScreenState extends State<MemberNotificationsScreen> {
       child: Card(
         elevation: notif.isRead ? 1 : 3,
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        color: notif.isRead ? Colors.white : AppColors.veryLightBlue.withOpacity(0.5),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          // ✅ TAP TO READ FULL NOTIFICATION
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        color: notif.isRead
+            ? Colors.white
+            : AppColors.veryLightBlue.withOpacity(0.5),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: notif.type.color.withOpacity(0.1),
+            child: Icon(notif.type.icon, color: notif.type.color),
+          ),
+          title: Text(notif.title,
+              style: TextStyle(
+                  fontWeight:
+                      notif.isRead ? FontWeight.normal : FontWeight.bold)),
+          subtitle: Text(notif.message,
+              maxLines: 2, overflow: TextOverflow.ellipsis),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                notif.createdAt != null
+                    ? timeago.format(notif.createdAt!)
+                    : "",
+                style: const TextStyle(fontSize: 10, color: Colors.grey),
+              ),
+              if (!notif.isRead)
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                      color: AppColors.blueColor, shape: BoxShape.circle),
+                ),
+            ],
+          ),
           onTap: () async {
             if (!notif.isRead) {
-              // ignore: empty_catches
-              try { await _notifService.markAsRead(userId, notif.id); } catch (e) {}
+              try {
+                await _notifService.markAsRead(userId, notif.id);
+              } catch (e) {
+                debugPrint("Error marking as read: $e");
+              }
             }
-            Navigator.push(context, MaterialPageRoute(
-              builder: (_) => NotificationDetailScreen(notification: notif),
-            ));
+            if (mounted) {
+              _showNotificationDetail(notif);
+            }
           },
-          child: Padding(
-            padding: EdgeInsets.all(AppResponsive.padding(context, 12)),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: AppResponsive.iconSize(context, 20),
-                  backgroundColor: notif.type.color.withOpacity(0.1),
-                  child: Icon(notif.type.icon, color: notif.type.color),
-                ),
-                SizedBox(width: AppResponsive.padding(context, 12)),
-                Expanded( // ✅ EXPANDED so text doesn't push unread dot off-screen
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+      ),
+    );
+  }
+
+  void _showNotificationDetail(AppNotification notif) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          minChildSize: 0.3,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return SingleChildScrollView(
+              controller: scrollController,
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
                     children: [
-                      Text(
-                        notif.title,
-                        style: AppResponsive.textStyle(
-                          context,
-                          fontSize: 14,
-                          fontWeight: notif.isRead ? FontWeight.normal : FontWeight.bold,
+                      CircleAvatar(
+                        backgroundColor: notif.type.color.withOpacity(0.1),
+                        child: Icon(notif.type.icon, color: notif.type.color),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              notif.type.label,
+                              style: TextStyle(
+                                color: notif.type.color,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              notif.createdAt != null
+                                  ? timeago.format(notif.createdAt!)
+                                  : "",
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis, // ✅ Truncate title
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        notif.message,
-                        style: AppResponsive.textStyle(context, fontSize: 12, color: Colors.grey[700]),
-                        maxLines: 2, // ✅ Only 2 lines in list
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        notif.createdAt != null ? timeago.format(notif.createdAt!) : "",
-                        style: AppResponsive.textStyle(context, fontSize: 10, color: Colors.grey),
                       ),
                     ],
                   ),
-                ),
-                if (!notif.isRead)
-                  Container(
-                    width: 8, height: 8,
-                    margin: EdgeInsets.only(top: AppResponsive.padding(context, 4)),
-                    decoration: const BoxDecoration(color: AppColors.blueColor, shape: BoxShape.circle),
+                  const SizedBox(height: 20),
+                  Text(
+                    notif.title,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-              ],
-            ),
-          ),
-        ),
-      ),
+                  const SizedBox(height: 12),
+                  Text(
+                    notif.message,
+                    style: const TextStyle(fontSize: 15, height: 1.5),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

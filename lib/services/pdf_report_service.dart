@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show Uint8List, rootBundle;
 
 import 'package:pdf/pdf.dart';
@@ -25,7 +26,7 @@ class PdfReportService {
       _regularFont = pw.Font.ttf(regularData);
       _boldFont = pw.Font.ttf(boldData);
     } catch (e) {
-      print("Custom fonts not found, using default: $e");
+      debugPrint("⚠️ Custom fonts not found, using default: $e");
       _regularFont = pw.Font.helvetica();
       _boldFont = pw.Font.helvetica();
     }
@@ -207,7 +208,7 @@ class PdfReportService {
         text: 'Attendance Report for $monthLabel from $gymName',
       );
     } catch (e) {
-      print("PDF Share error: $e");
+      debugPrint("PDF Share error: $e");
       rethrow;
     }
   }

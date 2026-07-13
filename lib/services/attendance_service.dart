@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_lead_master/src/data/models/attendance_model.dart';
@@ -54,7 +55,7 @@ class AttendanceService {
         );
 
         if (days.containsKey(dayKey)) {
-          print("Already recorded present today for $memberName");
+          debugPrint("Already recorded present today for $memberName");
           return;
         }
 
@@ -85,9 +86,9 @@ class AttendanceService {
         'updatedAt': FieldValue.serverTimestamp(), // Ensured
       });
 
-      print("Attendance recorded: $memberName present on day $dayKey");
+      debugPrint("Attendance recorded: $memberName present on day $dayKey");
     } catch (e) {
-      print("Error recording attendance: $e");
+      debugPrint("Error recording attendance: $e");
       rethrow;
     }
   }
@@ -127,7 +128,7 @@ class AttendanceService {
           .map((doc) => MemberAttendanceModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print("Error getting month records: $e");
+      debugPrint("Error getting month records: $e");
       rethrow;
     }
   }
@@ -157,7 +158,7 @@ class AttendanceService {
       }
       return null;
     } catch (e) {
-      print("Error getting member attendance: $e");
+      debugPrint("Error getting member attendance: $e");
       rethrow;
     }
   }
@@ -212,7 +213,7 @@ class AttendanceService {
 
       return result;
     } catch (e) {
-      print("Error getting member all attendance: $e");
+      debugPrint("Error getting member all attendance: $e");
       rethrow;
     }
   }
@@ -264,13 +265,8 @@ class AttendanceService {
         attendanceRate: rate,
       );
     } catch (e) {
-      print("Error getting today summary: $e");
-      return AttendanceDaySummary(
-        totalMembers: totalMembersCount,
-        presentCount: 0,
-        absentCount: totalMembersCount,
-        attendanceRate: 0.0,
-      );
+      debugPrint("Error getting today summary: $e");
+      rethrow;
     }
   }
 
@@ -315,9 +311,9 @@ class AttendanceService {
           .doc(monthKey)
           .delete();
 
-      print("Deleted attendance for month: $monthKey");
+      debugPrint("Deleted attendance for month: $monthKey");
     } catch (e) {
-      print("Error deleting month attendance: $e");
+      debugPrint("Error deleting month attendance: $e");
       rethrow;
     }
   }
@@ -366,7 +362,7 @@ class AttendanceService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print("Error marking absent: $e");
+      debugPrint("Error marking absent: $e");
       rethrow;
     }
   }
@@ -404,7 +400,7 @@ class AttendanceService {
         }
       }
     } catch (e) {
-      print("Error updating member name in attendance: $e");
+      debugPrint("Error updating member name in attendance: $e");
     }
   }
 }

@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_lead_master/services/notification_service.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/notifications/member_notifications_screen.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 class NotificationBell extends StatelessWidget {
   final bool isAdmin;
@@ -33,13 +33,10 @@ class NotificationBell extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          print("NotificationBell error: ${snapshot.error}");
+          debugPrint("⚠️ NotificationBell error: ${snapshot.error}");
           return IconButton(
             onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const MemberNotificationsScreen()));
+              Navigator.pushNamed(context, AppRoutes.memberNotificationsPage);
             },
             icon: const Icon(Icons.notifications_outlined,
                 color: Colors.white),
@@ -48,10 +45,7 @@ class NotificationBell extends StatelessWidget {
 
         return IconButton(
           onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const MemberNotificationsScreen()));
+            Navigator.pushNamed(context, AppRoutes.memberNotificationsPage);
           },
           icon: Stack(
             clipBehavior: Clip.none,

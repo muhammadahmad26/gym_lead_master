@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -77,7 +78,7 @@ class DatabaseService {
       }
 
       // ==========================================
-    
+      // STEP 2: Update stats (NO transaction - Web safe)
       // Uses FieldValue.increment which is ATOMIC in Firestore
       // ==========================================
       List<String> activeExercises =
@@ -145,12 +146,12 @@ class DatabaseService {
           memberEmail: memberEmail,
         );
       } catch (e) {
-        print("⚠️ Attendance recording failed (check-in still saved): $e");
+        debugPrint("⚠️ Attendance recording failed (check-in still saved): $e");
       }
 
       return "success";
     } catch (e) {
-      print("Check-in error: $e");
+      debugPrint("Check-in error: $e");
       rethrow;
     }
   }
@@ -277,7 +278,7 @@ class DatabaseService {
     String memberId,
   ) async {
     try {
-      print("STEP 1: Fetching member payments for memberId: $memberId");
+      debugPrint("STEP 1: Fetching member payments for memberId: $memberId");
 
       QuerySnapshot snapshot =
           await _firestore
@@ -287,16 +288,16 @@ class DatabaseService {
               .where('memberId', isEqualTo: memberId)
               .get();
 
-      print("STEP 2: Found ${snapshot.docs.length} total payment docs");
+      debugPrint("STEP 2: Found ${snapshot.docs.length} total payment docs");
 
       //  Client-side filter for NOT_PAID (avoids composite index)
       for (var doc in snapshot.docs) {
         var data = doc.data() as Map<String, dynamic>;
         String status = data['status'] ?? '';
-        print("Doc ${doc.id}: status = $status");
+        debugPrint("Doc ${doc.id}: status = $status");
 
         if (status == 'not_paid') {
-          print("STEP 3: Found existing NOT_PAID doc: ${doc.id}");
+          debugPrint("STEP 3: Found existing NOT_PAID doc: ${doc.id}");
           return doc.reference;
         }
       }
@@ -306,13 +307,13 @@ class DatabaseService {
         var data = doc.data() as Map<String, dynamic>;
         String status = data['status'] ?? '';
         if (status == 'pending') {
-          print("Member has PENDING payment. Cannot create new.");
+          debugPrint("⚠️ Member has PENDING payment. Cannot create new.");
           return null; // Signal that payment is already pending
         }
       }
 
       // No NOT_PAID and no PENDING → Create new NOT_PAID transaction
-      print("STEP 4: No NOT_PAID found. Creating new one...");
+      debugPrint("STEP 4: No NOT_PAID found. Creating new one...");
 
       // Get member details for denormalization
       String memberName = '';
@@ -324,7 +325,7 @@ class DatabaseService {
           memberEmail = userDoc.data()?['email'] ?? '';
         }
       } catch (e) {
-        print("Could not fetch user details: $e");
+        debugPrint("⚠️ Could not fetch user details: $e");
       }
 
       DocumentReference newDocRef = await _firestore
@@ -355,10 +356,10 @@ class DatabaseService {
             'rejectionReason': '',
           });
 
-      print("STEP 5: Created new NOT_PAID doc: ${newDocRef.id}");
+      debugPrint("STEP 5: Created new NOT_PAID doc: ${newDocRef.id}");
       return newDocRef;
     } catch (e) {
-      print("ERROR in findOrCreateNotPaidTransaction: $e");
+      debugPrint("ERROR in findOrCreateNotPaidTransaction: $e");
       rethrow;
     }
   }
@@ -380,7 +381,7 @@ class DatabaseService {
     required String screenshotUrl,// Changed from URL to Base64
   }) async {
     try {
-      print("STEP 6: Updating payment doc to PENDING...");
+      debugPrint("STEP 6: Updating payment doc to PENDING...");
 
       await paymentDocRef.update({
         'planId': planId,
@@ -397,10 +398,10 @@ class DatabaseService {
         'submittedAt': FieldValue.serverTimestamp(),
       });
 
-      print("STEP 7: Payment updated to PENDING successfully!");
+      debugPrint("STEP 7: Payment updated to PENDING successfully!");
       return "success";
     } catch (e) {
-      print("ERROR in submitPayment: $e");
+      debugPrint("ERROR in submitPayment: $e");
       rethrow;
     }
   }
@@ -489,9 +490,11 @@ class DatabaseService {
         memberName = userDoc.data()?['name'] ?? '';
         memberEmail = userDoc.data()?['email'] ?? '';
       }
-    // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) {
+      debugPrint("Could not fetch member details for new NOT_PAID doc: $e");
+    }
 
+    // Create a new NOT_PAID document so the member can retry payment
     await _firestore.collection('gyms').doc(gymId).collection('payments').add({
       'memberId': memberId,
       'memberName': memberName,

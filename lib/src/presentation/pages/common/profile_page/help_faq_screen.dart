@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/profile_page/contact_support_screen.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 // --- DATA MODELS ---
 class FaqItem {
@@ -219,10 +219,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
         ),
         child: FilledButton.icon(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ContactSupportScreen()),
-            );
+            Navigator.pushNamed(context, AppRoutes.contactSupportPage);
           },
           icon: const Icon(Icons.headset_mic_outlined),
           label: const Text('Contact Support', style: TextStyle(fontSize: 16)),

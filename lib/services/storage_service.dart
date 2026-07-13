@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 
 class StorageService {
   final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -11,14 +11,14 @@ class StorageService {
   /// Upload profile image using BYTES 
   Future<String?> uploadProfileImage(String userId, XFile imageFile) async {
     try {
-      print("STEP 1: Reading image bytes...");
+      debugPrint("STEP 1: Reading image bytes...");
       
       // Read bytes - works on Android, iOS, Web, Windows, macOS, Linux
       Uint8List bytes = await imageFile.readAsBytes();
-      print("STEP 2: Bytes read successfully. Size: ${bytes.length} bytes");
+      debugPrint("STEP 2: Bytes read successfully. Size: ${bytes.length} bytes");
 
       if (bytes.isEmpty) {
-        print("ERROR: Image bytes are empty!");
+        debugPrint("ERROR: Image bytes are empty!");
         return null;
       }
 
@@ -30,8 +30,8 @@ class StorageService {
         customMetadata: {'uploadedBy': userId},
       );
 
-      print("STEP 3: Starting upload to Firebase Storage...");
-      print("Path: users/$userId/$fileName");
+      debugPrint("STEP 3: Starting upload to Firebase Storage...");
+      debugPrint("Path: users/$userId/$fileName");
 
       // Use putData for ALL platforms (NOT putFile)
       UploadTask uploadTask = ref.putData(bytes, metadata);
@@ -40,26 +40,26 @@ class StorageService {
       TaskSnapshot snapshot = await uploadTask.timeout(
         const Duration(seconds: 60),
         onTimeout: () {
-          print("ERROR: Upload timed out after 60 seconds!");
+          debugPrint("ERROR: Upload timed out after 60 seconds!");
           throw TimeoutException('Image upload timed out');
         },
       );
 
-      print("STEP 4: Upload complete. Getting download URL...");
+      debugPrint("STEP 4: Upload complete. Getting download URL...");
 
       // Get download URL
       String downloadUrl = await snapshot.ref.getDownloadURL();
-      print("STEP 5: Download URL = $downloadUrl");
+      debugPrint("STEP 5: Download URL = $downloadUrl");
 
       return downloadUrl;
     } on TimeoutException {
-      print("TIMEOUT: Image upload took too long");
+      debugPrint("TIMEOUT: Image upload took too long");
       return null;
     } on FirebaseException catch (e) {
-      print("FIREBASE ERROR: ${e.code} - ${e.message}");
+      debugPrint("FIREBASE ERROR: ${e.code} - ${e.message}");
       return null;
     } catch (e) {
-      print("UNKNOWN ERROR: $e");
+      debugPrint("UNKNOWN ERROR: $e");
       return null;
     }
   }
@@ -68,11 +68,11 @@ class StorageService {
     try {
       String fileName = 'profile_$userId.jpg';
       await _storage.ref().child('users/$userId/$fileName').delete();
-      print("Image deleted successfully");
+      debugPrint("Image deleted successfully");
     } on FirebaseException catch (e) {
-      print("DELETE ERROR: ${e.code} - ${e.message}");
+      debugPrint("DELETE ERROR: ${e.code} - ${e.message}");
     } catch (e) {
-      print("DELETE ERROR: $e");
+      debugPrint("DELETE ERROR: $e");
     }
   }
 }

@@ -1,13 +1,12 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/services/notification_service.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
-import 'package:gym_lead_master/src/core/utils/app_responsive.dart';
 import 'package:gym_lead_master/src/data/models/notification_model.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_pages/notifications/create_notification_screen.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/notifications/notification_detail_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class AdminNotificationsScreen extends StatefulWidget {
@@ -40,11 +39,10 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
       } else {
         String? uid = FirebaseAuth.instance.currentUser?.uid;
         if (uid != null) {
-          var doc =
-              await FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(uid)
-                  .get();
+          var doc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .get();
           if (doc.exists) {
             String dbGymId = doc.data()!['gymId'] ?? '';
             if (dbGymId.isNotEmpty) {
@@ -65,7 +63,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
         }
       }
     } catch (e) {
-      print("Error loading gymId: $e");
+      debugPrint("Error loading gymId: $e");
       setState(() {
         _gymId = '';
         _errorMessage = "Failed to load gym data.";
@@ -77,10 +75,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Sent Notifications",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text("Sent Notifications",
+            style: TextStyle(color: Colors.white)),
         backgroundColor: AppColors.DarkBlueGrey,
         actions: [
           IconButton(
@@ -96,11 +92,10 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.blueColor,
         onPressed: () {
-          Navigator.push(
+          Navigator.pushNamed(
             context,
-            MaterialPageRoute(
-              builder: (_) => CreateNotificationScreen(gymId: _gymId),
-            ),
+            AppRoutes.createNotificationPage,
+            arguments: {'gymId': _gymId},
           );
         },
         child: const Icon(Icons.add, color: Colors.white),
@@ -126,7 +121,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
         }
 
         if (snapshot.hasError) {
-          print("Notification stream error: ${snapshot.error}");
+          debugPrint("Notification stream error: ${snapshot.error}");
           return _buildErrorState(
             "Error loading notifications.\n${snapshot.error}",
             Icons.cloud_off,
@@ -139,20 +134,17 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
         }
 
         // CLIENT-SIDE FILTER: Remove deleted notifications
-        var activeDocs =
-            snapshot.data!.docs.where((doc) {
-              var data = doc.data() as Map<String, dynamic>;
-              return data['isDeleted'] != true;
-            }).toList();
+        var activeDocs = snapshot.data!.docs.where((doc) {
+          var data = doc.data() as Map<String, dynamic>;
+          return data['isDeleted'] != true;
+        }).toList();
 
         if (activeDocs.isEmpty) {
           return _buildEmptyState();
         }
 
         var notifs =
-            activeDocs
-                .map((doc) => AppNotification.fromFirestore(doc))
-                .toList();
+            activeDocs.map((doc) => AppNotification.fromFirestore(doc)).toList();
 
         return RefreshIndicator(
           onRefresh: () async => setState(() {}),
@@ -179,89 +171,64 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        // TAP TO READ FULL NOTIFICATION
-        onTap:
-            isDeleting
-                ? null
-                : () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => NotificationDetailScreen(notification: notif),
-                    ),
-                  );
-                },
         onLongPress: isDeleting ? null : () => _showDeleteDialog(notif),
         child: Stack(
           children: [
             Padding(
-              padding: EdgeInsets.all(AppResponsive.padding(context, 12)),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       CircleAvatar(
-                        radius: AppResponsive.iconSize(context, 20),
+                        radius: 20,
                         backgroundColor: notif.type.color.withOpacity(0.15),
-                        child: Icon(
-                          notif.type.icon,
-                          color: notif.type.color,
-                          size: AppResponsive.iconSize(context, 20),
-                        ),
+                        child: Icon(notif.type.icon,
+                            color: notif.type.color, size: 20),
                       ),
-                      SizedBox(width: AppResponsive.padding(context, 12)),
+                      const SizedBox(width: 12),
                       Expanded(
-                        // EXPANDED so text doesn't push time off-screen
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               notif.title,
-                              style: AppResponsive.textStyle(
-                                context,
-                                fontSize: 15,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
+                                fontSize: 15,
                               ),
                               maxLines: 1,
-                              overflow:
-                                  TextOverflow
-                                      .ellipsis, // Truncate if too long
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            SizedBox(height: 4),
-                            // Type & Count in a Wrap so they don't overlap
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 4,
-                              crossAxisAlignment: WrapCrossAlignment.center,
+                            const SizedBox(height: 2),
+                            Row(
                               children: [
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
+                                      horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: notif.type.color.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     notif.type.label,
-                                    style: AppResponsive.textStyle(
-                                      context,
+                                    style: TextStyle(
+                                      color: notif.type.color,
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
-                                      color: notif.type.color,
                                     ),
                                   ),
                                 ),
-                                Text(
-                                  "To: ${notif.targetCount} members",
-                                  style: AppResponsive.textStyle(
-                                    context,
-                                    fontSize: 11,
-                                    color: Colors.grey[600],
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    "To: ${notif.targetCount} members",
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey[600],
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
@@ -269,31 +236,26 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
                           ],
                         ),
                       ),
-                      SizedBox(width: AppResponsive.padding(context, 8)),
-                      // Time
+                      const SizedBox(width: 6),
                       Text(
                         notif.createdAt != null
                             ? timeago.format(notif.createdAt!)
                             : "Just now",
-                        style: AppResponsive.textStyle(
-                          context,
-                          fontSize: 11,
-                          color: Colors.grey,
-                        ),
+                        style:
+                            const TextStyle(fontSize: 11, color: Colors.grey),
                       ),
                     ],
                   ),
-                  SizedBox(height: AppResponsive.padding(context, 8)),
+                  const SizedBox(height: 8),
                   Text(
                     notif.message,
-                    style: AppResponsive.textStyle(
-                      context,
-                      fontSize: 13,
+                    style: TextStyle(
                       color: Colors.grey[700],
+                      fontSize: 13,
                       height: 1.4,
                     ),
-                    maxLines: 2, // Only show 2 lines in list
-                    overflow: TextOverflow.ellipsis, // Cut with "..."
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -304,22 +266,21 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
                   color: Colors.white.withOpacity(0.85),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Center(
+                child: const Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(16.0),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const SizedBox(
+                        SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                        SizedBox(width: AppResponsive.padding(context, 12)),
+                        SizedBox(width: 12),
                         Text(
                           "Deleting for all members...",
-                          style: AppResponsive.textStyle(
-                            context,
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -338,163 +299,86 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
   void _showDeleteDialog(AppNotification notif) {
     showDialog(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Row(
-              children: [
-                Icon(
-                  Icons.delete_outline,
-                  color: Colors.red[700],
-                  size: AppResponsive.iconSize(context, 24),
-                ),
-                SizedBox(width: AppResponsive.padding(context, 10)),
-                // Flexible: Agar title lamba ho toh wrap karega, overlap nahi karega
-                Flexible(
-                  child: Text(
-                    "Delete Notification?",
-                    style: AppResponsive.textStyle(
-                      context,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "This notification will be removed from:",
-                  style: AppResponsive.textStyle(
-                    context,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: AppResponsive.padding(context, 12)),
-
-                // Row 1: Admin Dashboard
-                _buildDialogInfoRow(
-                  Icons.admin_panel_settings,
-                  AppColors.DarkBlueGrey,
-                  "Your admin dashboard",
-                ),
-                SizedBox(height: AppResponsive.padding(context, 8)),
-
-                // Row 2: Member Devices
-                _buildDialogInfoRow(
-                  Icons.people,
-                  AppColors.blueColor,
-                  "All ${notif.targetCount} member devices",
-                ),
-
-                SizedBox(height: AppResponsive.padding(context, 16)),
-
-                // Warning Info Box
-                Container(
-                  padding: EdgeInsets.all(AppResponsive.padding(context, 10)),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: AppResponsive.iconSize(context, 16),
-                        color: Colors.orange[700],
-                      ),
-                      SizedBox(width: AppResponsive.padding(context, 8)),
-                      // ✅ Expanded: Text chhoti screen par auto next line par jayega
-                      Expanded(
-                        child: Text(
-                          "This action can be undone from the database if needed.",
-                          style: AppResponsive.textStyle(
-                            context,
-                            fontSize: 12,
-                            color: Colors.orange[700],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              // ✅ FittedBox: Buttons chhoti screen par overlap nahi karenge
-              FittedBox(
-                child: Row(
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: Text(
-                        "Cancel",
-                        style: AppResponsive.textStyle(
-                          context,
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: AppResponsive.padding(context, 8)),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        _performDelete(notif);
-                      },
-                      icon: Icon(
-                        Icons.delete,
-                        size: AppResponsive.iconSize(context, 18),
-                      ),
-                      label: Text(
-                        "Delete for Everyone",
-                        style: AppResponsive.textStyle(
-                          context,
-                          fontSize: 14,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-    );
-  }
-
-  // Helper Method: Dialog ke andar ki rows ke liye (Clean code)
-  Widget _buildDialogInfoRow(IconData icon, Color color, String text) {
-    return Row(
-      children: [
-        Icon(icon, size: AppResponsive.iconSize(context, 16), color: color),
-        SizedBox(width: AppResponsive.padding(context, 8)),
-        // Flexible: Text agar lamba ho toh cut jayega "..." se, overlap nahi karega
-        Flexible(
-          child: Text(
-            text,
-            style: AppResponsive.textStyle(
-              context,
-              fontSize: 13,
-              color: Colors.black87,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
+      builder: (ctx) => AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.delete_outline, color: Colors.red[700], size: 28),
+            const SizedBox(width: 10),
+            const Expanded(child: Text("Delete Notification?")),
+          ],
         ),
-      ],
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "This notification will be removed from:",
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.admin_panel_settings,
+                    size: 16, color: AppColors.DarkBlueGrey),
+                const SizedBox(width: 6),
+                const Expanded(child: Text("Your admin dashboard")),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(Icons.people, size: 16, color: AppColors.blueColor),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text("All ${notif.targetCount} member devices"),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16, color: Colors.orange[700]),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      "This action can be undone from the database if needed.",
+                      style:
+                          TextStyle(fontSize: 11, color: Colors.orange[700]),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _performDelete(notif);
+            },
+            icon: const Icon(Icons.delete, size: 18),
+            label: const Text("Delete for Everyone"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -509,7 +393,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              "Notification deleted for you and ${notif.targetCount} members ",
+              "Notification deleted for you and ${notif.targetCount} members ✅",
             ),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 3),
@@ -517,7 +401,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
         );
       }
     } catch (e) {
-      print("Delete failed: $e");
+      debugPrint("Delete failed: $e");
       if (mounted) {
         setState(() => _deletingNotifId = null);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -534,24 +418,21 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
   Future<void> _runMigration() async {
     bool? confirm = await showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text("Sync Old Notifications?"),
-            content: const Text(
-              "This will add required fields to old notifications "
-              "so they appear correctly. Run this only once.",
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text("Cancel"),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text("Run Sync"),
-              ),
-            ],
-          ),
+      builder: (ctx) => AlertDialog(
+        title: const Text("Sync Old Notifications?"),
+        content: const Text(
+          "This will add required fields to old notifications "
+          "so they appear correctly. Run this only once.",
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text("Cancel")),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text("Run Sync")),
+        ],
+      ),
     );
 
     if (confirm != true) return;
@@ -559,16 +440,15 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (ctx) => const AlertDialog(
-            content: Row(
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(width: 16),
-                Text("Syncing notifications..."),
-              ],
-            ),
-          ),
+      builder: (ctx) => const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 16),
+            Text("Syncing notifications..."),
+          ],
+        ),
+      ),
     );
 
     try {
@@ -577,7 +457,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Sync complete! "),
+            content: Text("Sync complete! ✅"),
             backgroundColor: Colors.green,
           ),
         );
@@ -602,11 +482,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.notifications_off_outlined,
-              size: 80,
-              color: Colors.grey[300],
-            ),
+            Icon(Icons.notifications_off_outlined,
+                size: 80, color: Colors.grey[300]),
             const SizedBox(height: 16),
             const Text(
               "No Sent Notifications Yet",

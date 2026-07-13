@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/active_member_list_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/admin_main_page.dart';
+import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/attendance/attendance_dashboard_screen.dart';
+import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/attendance/attendance_month_screen.dart';
+import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/attendance/member_detail_screen.dart';
+import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/gym_member_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/chat_page/chat_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/data/model/messages_model.dart';
+import 'package:gym_lead_master/src/presentation/pages/admin_pages/notifications/admin_notifications_screen.dart';
+import 'package:gym_lead_master/src/presentation/pages/admin_pages/notifications/create_notification_screen.dart';
+import 'package:gym_lead_master/src/presentation/pages/common/forget_password_page.dart';
+import 'package:gym_lead_master/src/presentation/pages/common/notifications/member_notifications_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/profile_page/about_app_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/profile_page/contact_support_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/profile_page/help_faq_screen.dart';
+import 'package:gym_lead_master/src/presentation/pages/common/profile_page/privacy_policy_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/profile_page/term_and_conditions_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/login_pages/gym_admin_login_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/login_pages/gym_member_login_page.dart';
@@ -49,6 +58,75 @@ class AppRouter {
         );
       case AppRoutes.memberHomePage:
         return MaterialPageRoute(builder: (_) => MemeberHomePage());
+      case AppRoutes.privacyPolicyPage:
+        return MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen());
+      case AppRoutes.forgetPasswordPage:
+        return MaterialPageRoute(builder: (_) => const ForgetPasswordPage());
+      case AppRoutes.memberNotificationsPage:
+        return MaterialPageRoute(
+          builder: (_) => const MemberNotificationsScreen(),
+        );
+      case AppRoutes.adminNotificationsPage:
+        return MaterialPageRoute(
+          builder: (_) => const AdminNotificationsScreen(),
+        );
+      case AppRoutes.gymMembersPage:
+        return MaterialPageRoute(builder: (_) => const GymMembersPage());
+      case AppRoutes.attendanceDashboardPage:
+        {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder:
+                (_) => AttendanceDashboardScreen(gymId: args['gymId']),
+          );
+        }
+      case AppRoutes.attendanceMonthPage:
+        {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder:
+                (_) => AttendanceMonthScreen(
+                  gymId: args['gymId'],
+                  monthKey: args['monthKey'],
+                  monthLabel: args['monthLabel'],
+                  year: args['year'],
+                  monthNum: args['monthNum'],
+                ),
+          );
+        }
+      case AppRoutes.memberDetailPage:
+        {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder:
+                (_) => MemberDetailScreen(
+                  gymId: args['gymId'],
+                  memberData: args['memberData'],
+                ),
+          );
+        }
+      case AppRoutes.chatDetailPage:
+        {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder:
+                (_) => ChatDetailScreen(
+                  gymId: args['gymId'],
+                  receiverUid: args['receiverUid'],
+                  receiverName: args['receiverName'],
+                  receiverImageBase64: args['receiverImageBase64'],
+                  receiverImageUrl: args['receiverImageUrl'],
+                ),
+          );
+        }
+      case AppRoutes.createNotificationPage:
+        {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder:
+                (_) => CreateNotificationScreen(gymId: args['gymId']),
+          );
+        }
       default:
         return MaterialPageRoute(
           builder:

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_lead_master/services/notification_service.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/data/models/notification_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateNotificationScreen extends StatefulWidget {
   final String gymId;
@@ -18,10 +16,16 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleCtrl = TextEditingController();
   final TextEditingController _msgCtrl = TextEditingController();
+
+  // These are updated via callbacks from the split-out widgets below WITHOUT
+  // calling setState() on this parent — so picking a type / radio / checkbox
+  // no longer rebuilds the Title/Message fields or the rest of the form.
   NotificationType _selectedType = NotificationType.general;
   String _sendTo = 'all'; // 'all' or specific userIds
-  final List<String> _selectedUserIds = [];
+  List<String> _selectedUserIds = [];
+
   bool _isSending = false;
+
   @override
   void dispose() {
     _titleCtrl.dispose();
@@ -36,7 +40,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
 
     try {
       List<String> targets = _sendTo == 'all' ? ['all'] : _selectedUserIds;
-      
+
       await NotificationService().sendNotificationToMembers(
         gymId: widget.gymId,
         title: _titleCtrl.text.trim(),
@@ -73,31 +77,33 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
               const SizedBox(height: 16),
               TextFormField(controller: _msgCtrl, validator: (v) => v!.isEmpty ? "Required" : null, maxLines: 4, decoration: const InputDecoration(labelText: "Message", border: OutlineInputBorder())),
               const SizedBox(height: 16),
-              
-              // Type Dropdown
-              DropdownButtonFormField<NotificationType>(
-                value: _selectedType,
-                items: NotificationType.values.map((type) => DropdownMenuItem(value: type, child: Text(type.label))).toList(),
-                onChanged: (val) => setState(() => _selectedType = val!),
-                decoration: const InputDecoration(labelText: "Notification Type", border: OutlineInputBorder()),
+
+              // Type Dropdown — split into its own widget so selecting a type
+              // only rebuilds the dropdown, not the Title/Message fields above.
+              _NotificationTypeDropdown(
+                initialType: _selectedType,
+                onChanged: (val) => _selectedType = val,
               ),
               const SizedBox(height: 16),
 
-              // Send To Selection
-              const Text("Send To:", style: TextStyle(fontWeight: FontWeight.bold)),
-              RadioListTile(value: 'all', groupValue: _sendTo, onChanged: (val) => setState(() => _sendTo = val!), title: const Text("All Members")),
-              RadioListTile(value: 'selected', groupValue: _sendTo, onChanged: (val) => setState(() => _sendTo = val!), title: const Text("Selected Members")),
-
-              if (_sendTo == 'selected') _buildMemberSelector(),
+              // Send To Selection — split into its own widget so toggling the
+              // radio buttons / member checkboxes only rebuilds this section.
+              _SendToSelector(
+                gymId: widget.gymId,
+                onChanged: (sendTo, selectedUserIds) {
+                  _sendTo = sendTo;
+                  _selectedUserIds = selectedUserIds;
+                },
+              ),
 
               const SizedBox(height: 30),
-              
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _isSending ? null : _sendNotification,
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.blueColor, padding: const EdgeInsets.all(14)),
-                  child: _isSending 
+                  child: _isSending
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text("SEND NOTIFICATION", style: TextStyle(color: Colors.white, fontSize: 16)),
                 ),
@@ -106,6 +112,92 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Notification type dropdown, isolated so its own setState doesn't
+/// rebuild the parent screen's Title/Message fields.
+class _NotificationTypeDropdown extends StatefulWidget {
+  final NotificationType initialType;
+  final ValueChanged<NotificationType> onChanged;
+
+  const _NotificationTypeDropdown({
+    required this.initialType,
+    required this.onChanged,
+  });
+
+  @override
+  State<_NotificationTypeDropdown> createState() => _NotificationTypeDropdownState();
+}
+
+class _NotificationTypeDropdownState extends State<_NotificationTypeDropdown> {
+  late NotificationType _selectedType = widget.initialType;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<NotificationType>(
+      value: _selectedType,
+      items: NotificationType.values.map((type) => DropdownMenuItem(value: type, child: Text(type.label))).toList(),
+      onChanged: (val) {
+        setState(() => _selectedType = val!);
+        widget.onChanged(val!);
+      },
+      decoration: const InputDecoration(labelText: "Notification Type", border: OutlineInputBorder()),
+    );
+  }
+}
+
+/// "Send To" radio group + member checklist, isolated in its own
+/// StatefulWidget. Rebuilds triggered by picking a radio option or
+/// checking/unchecking a member no longer touch the parent screen at all.
+class _SendToSelector extends StatefulWidget {
+  final String gymId;
+  final void Function(String sendTo, List<String> selectedUserIds) onChanged;
+
+  const _SendToSelector({
+    required this.gymId,
+    required this.onChanged,
+  });
+
+  @override
+  State<_SendToSelector> createState() => _SendToSelectorState();
+}
+
+class _SendToSelectorState extends State<_SendToSelector> {
+  String _sendTo = 'all';
+  final List<String> _selectedUserIds = [];
+
+  void _notifyParent() {
+    widget.onChanged(_sendTo, _selectedUserIds);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Send To:", style: TextStyle(fontWeight: FontWeight.bold)),
+        RadioListTile<String>(
+          value: 'all',
+          groupValue: _sendTo,
+          onChanged: (val) {
+            setState(() => _sendTo = val!);
+            _notifyParent();
+          },
+          title: const Text("All Members"),
+        ),
+        RadioListTile<String>(
+          value: 'selected',
+          groupValue: _sendTo,
+          onChanged: (val) {
+            setState(() => _sendTo = val!);
+            _notifyParent();
+          },
+          title: const Text("Selected Members"),
+        ),
+        if (_sendTo == 'selected') _buildMemberSelector(),
+      ],
     );
   }
 
@@ -117,14 +209,14 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
           var members = snapshot.data!.docs;
-          
+
           return ListView.builder(
             itemCount: members.length,
             itemBuilder: (context, index) {
               var data = members[index].data() as Map<String, dynamic>;
               String uid = data['uid'];
               String name = data['name'];
-              
+
               return CheckboxListTile(
                 value: _selectedUserIds.contains(uid),
                 title: Text(name),
@@ -136,6 +228,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                       _selectedUserIds.remove(uid);
                     }
                   });
+                  _notifyParent();
                 },
               );
             },

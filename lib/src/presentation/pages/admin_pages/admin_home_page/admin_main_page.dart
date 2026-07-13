@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/gym_member_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/payment_page/admin_pyment_page.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/home_body.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/admin_message_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/profile_page/profile_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/custom_bottom_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 class adminHomePage extends StatefulWidget {
   const adminHomePage({super.key});
@@ -77,10 +77,7 @@ class _adminHomePageState extends State<adminHomePage> {
           selectedIndex: seletedIndex,
           // UPDATED: Navigate to Gym Members Page
           onCenterButtonTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const GymMembersPage()),
-            );
+            Navigator.pushNamed(context, AppRoutes.gymMembersPage);
           },
         ),
       ),

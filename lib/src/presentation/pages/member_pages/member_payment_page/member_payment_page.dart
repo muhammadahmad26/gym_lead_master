@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,6 +12,7 @@ import 'package:gym_lead_master/src/data/models/membership_plan_model.dart';
 import 'package:gym_lead_master/src/data/models/payment_model.dart';
 import 'package:gym_lead_master/src/data/models/transaction_model.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
@@ -47,8 +48,15 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
   String? _selectedAccountTitle;
   String? _selectedAccountNumber;
 
+  // Price is shown live on the Pay button via this notifier instead of a
+  // full-screen setState, so picking a plan doesn't rebuild the whole page.
+  final ValueNotifier<double> _priceNotifier = ValueNotifier(0.0);
+
   late TabController _historyTabController;
   bool _hasPendingPayment = false;
+
+  final GlobalKey<_ScreenshotUploaderState> _screenshotKey =
+      GlobalKey<_ScreenshotUploaderState>();
 
   @override
   void initState() {
@@ -80,62 +88,19 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
   @override
   void dispose() {
     _historyTabController.dispose();
+    _priceNotifier.dispose();
     super.dispose();
   }
 
-  // ==========================================
-  // FIXED: Image Picker with STRONG compression
-  // ==========================================
-  Future<void> _pickImage() async {
-    try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 800, // Max width 800px
-        maxHeight: 800, // Max height 800px
-        imageQuality: 40, // 40% quality (was 50)
-      );
-
-      if (image != null) {
-        final bytes = await image.readAsBytes();
-
-        print(
-          "Image picked: ${bytes.length} bytes (${(bytes.length / 1024).toStringAsFixed(1)} KB)",
-        );
-
-        // Validate size: Max 500KB
-        if (bytes.length > 500000) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  "Image too large! Max 500KB allowed. Please pick a smaller image.",
-                ),
-                backgroundColor: Colors.red,
-                duration: Duration(seconds: 3),
-              ),
-            );
-          }
-          return;
-        }
-
-        setState(() => _imageBytes = bytes);
-      }
-    } catch (e) {
-      print("Image pick error: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Error picking image: $e"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
+  // Image picking now lives entirely inside _ScreenshotUploader below —
+  // it reports the picked bytes back via a callback (no setState here),
+  // so picking/removing a screenshot no longer rebuilds the whole page.
 
   // ==========================================
-  // FIXED: Submit Payment using Direct Bytes (No path_provider needed)
+  // COMPLETELY FIXED: Submit Payment with Timeout + Progress
+  // ==========================================
+  // ==========================================
+  // FIXED: Submit Payment using BASE64 (No Storage Needed)
   // ==========================================
   Future<void> _submitPayment() async {
     if (_selectedPlanId == null) {
@@ -173,8 +138,8 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
     });
 
     try {
-      // STEP 1: Find NOT_PAID transaction
-      print("STEP 1: Finding NOT_PAID transaction...");
+      // Find NOT_PAID transaction
+      debugPrint("STEP 1: Finding NOT_PAID transaction...");
       DocumentReference? notPaidRef = await _dbService
           .findOrCreateNotPaidTransaction(_gymId, _memberId)
           .timeout(
@@ -201,58 +166,51 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
         return;
       }
 
-      // STEP 2: Upload Image Bytes directly to Cloudinary
+    //  Convert bytes to XFile and Upload to Cloudinary
+    setState(() { _loadingMessage = "Uploading to cloud..."; _uploadProgress = 0.5; });
+
+     
+      // Create a temporary XFile from bytes
+    String tempPath = (await getTemporaryDirectory()).path + '/payment_screenshot.jpg';
+    File tempFile = File(tempPath);
+    await tempFile.writeAsBytes(_imageBytes!);
+    XFile imageFile = XFile(tempPath);
+    
+    String? screenshotUrl = await CloudinaryService().uploadImage(imageFile);
+    
+    if (screenshotUrl == null) {
+      throw Exception("Screenshot upload failed. Please try again.");
+    }
+
+      // STEP 3: Update payment in Firestore
       setState(() {
-        _loadingMessage = "Uploading screenshot to cloud...";
-        _uploadProgress = 0.5;
-      });
-
-      print("STEP 2: Uploading bytes directly to Cloudinary...");
-
-      // ✅ FIX: Directly upload bytes, NO temporary file needed
-      String? screenshotUrl = await CloudinaryService().uploadBytes(
-        _imageBytes!,
-        fileName: 'payment_${DateTime.now().millisecondsSinceEpoch}.jpg',
-      );
-
-      if (screenshotUrl == null) {
-        throw Exception("Screenshot upload failed. Please try again.");
-      }
-
-      // STEP 3: Update payment in Firestore with URL
-      setState(() {
-        _loadingMessage = "Finalizing payment...";
+        _loadingMessage = "Finalizing...";
         _uploadProgress = 0.8;
       });
 
-      print("STEP 3: Updating payment doc to PENDING...");
 
-      String result = await _dbService
-          .submitPayment(
-            gymId: _gymId,
-            paymentDocRef: notPaidRef,
-            planId: _selectedPlanId!,
-            planName: _selectedPlanName!,
-            amount: _selectedPlanPrice,
-            duration: _selectedPlanDuration,
-            paymentMethodId: _selectedMethodId!,
-            paymentMethodType: _selectedMethodType!,
-            paymentMethodLabel: _selectedMethodLabel!,
-            accountTitle: _selectedAccountTitle!,
-            accountNumber: _selectedAccountNumber!,
-            screenshotUrl: screenshotUrl, // ✅ Cloudinary URL save hoga
-          )
-          .timeout(
-            const Duration(seconds: 15),
-            onTimeout: () {
-              throw TimeoutException('Saving payment details timed out');
-            },
-          );
+
+     String result = await _dbService.submitPayment(
+      gymId: _gymId,
+      paymentDocRef: notPaidRef,
+      planId: _selectedPlanId!,
+      planName: _selectedPlanName!,
+      amount: _selectedPlanPrice,
+      duration: _selectedPlanDuration,
+      paymentMethodId: _selectedMethodId!,
+      paymentMethodType: _selectedMethodType!,
+      paymentMethodLabel: _selectedMethodLabel!,
+      accountTitle: _selectedAccountTitle!,
+      accountNumber: _selectedAccountNumber!,
+      screenshotUrl: screenshotUrl, // ✅ Pass URL instead of Base64
+    ).timeout(const Duration(seconds: 15), onTimeout: () { throw TimeoutException('Saving payment details timed out'); });
+
 
       if (result == "success") {
-        print("STEP 4: Payment submitted successfully!");
+        debugPrint("STEP 4: Payment submitted successfully!");
+        _imageBytes = null;
+        _screenshotKey.currentState?.clear();
         setState(() {
-          _imageBytes = null;
           _selectedPlanId = null;
           _selectedMethodId = null;
           _selectedPlanPrice = 0.0;
@@ -267,17 +225,18 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
           _uploadProgress = 1.0;
           _hasPendingPayment = true;
         });
+        _priceNotifier.value = 0.0;
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Payment Submitted Successfully! ✅"),
+            content: Text("Payment Submitted Successfully!"),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 3),
           ),
         );
       }
     } on TimeoutException catch (e) {
-      print("TIMEOUT: $e");
+      debugPrint("TIMEOUT: $e");
       setState(() {
         _isUploading = false;
         _loadingMessage = "";
@@ -291,7 +250,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
         ),
       );
     } catch (e) {
-      print("GENERAL ERROR: $e");
+      debugPrint("GENERAL ERROR: $e");
       setState(() {
         _isUploading = false;
         _loadingMessage = "";
@@ -301,7 +260,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
         SnackBar(
           content: Text("Error: $e"),
           backgroundColor: Colors.red,
-          duration: const Duration(seconds: 4),
+          duration: Duration(seconds: 4),
         ),
       );
     }
@@ -332,11 +291,33 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
             if (_hasPendingPayment)
               _buildPendingMessage()
             else ...[
-              _buildPlanSelection(),
+              _PlanSelector(
+                gymId: _gymId,
+                onSelected: (planId, planName, price, duration) {
+                  _selectedPlanId = planId;
+                  _selectedPlanName = planName;
+                  _selectedPlanPrice = price;
+                  _selectedPlanDuration = duration;
+                  _priceNotifier.value = price;
+                },
+              ),
               const SizedBox(height: 16),
-              _buildPaymentMethodSelection(),
+              _PaymentMethodSelector(
+                gymId: _gymId,
+                onSelected: (id, type, label, accountTitle, accountNumber) {
+                  _selectedMethodId = id;
+                  _selectedMethodType = type;
+                  _selectedMethodLabel = label;
+                  _selectedAccountTitle = accountTitle;
+                  _selectedAccountNumber = accountNumber;
+                },
+              ),
               const SizedBox(height: 16),
-              _buildScreenshotUpload(),
+              _ScreenshotUploader(
+                key: _screenshotKey,
+                isUploading: _isUploading,
+                onImageChanged: (bytes) => _imageBytes = bytes,
+              ),
               const SizedBox(height: 24),
               _isUploading ? _buildLoadingButton() : _buildPayNowButton(),
             ],
@@ -367,7 +348,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
         }
 
         if (snapshot.hasError) {
-          print("Status Card Error: ${snapshot.error}");
+          debugPrint("Status Card Error: ${snapshot.error}");
           return Card(
             color: Colors.red[50],
             margin: const EdgeInsets.all(12),
@@ -501,337 +482,8 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
     );
   }
 
-  // ==========================================
-  // PLAN SELECTION
-  // ==========================================
-  Widget _buildPlanSelection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            "STEP 1: Select Plan",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: AppColors.DarkBlueGrey,
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 140,
-          child: StreamBuilder<QuerySnapshot>(
-            stream: _dbService.getMembershipPlans(_gymId),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return const Center(
-                  child: Text(
-                    "No plans available.\nAsk admin to create plans.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                );
-              }
+  // Plan selection now lives in the standalone _PlanSelector widget below.
 
-              var plans =
-                  snapshot.data!.docs
-                      .map((doc) => MembershipPlanModel.fromFirestore(doc))
-                      .toList();
-
-              return ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: plans.length,
-                itemBuilder: (context, index) {
-                  var plan = plans[index];
-                  bool isSelected = _selectedPlanId == plan.id;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedPlanId = plan.id;
-                        _selectedPlanName = plan.planName;
-                        _selectedPlanPrice = plan.price;
-                        _selectedPlanDuration = plan.duration;
-                      });
-                    },
-                    child: Container(
-                      width: 150,
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        color:
-                            isSelected
-                                ? AppColors.blueColor.withOpacity(0.1)
-                                : Colors.white,
-                        border: Border.all(
-                          color:
-                              isSelected
-                                  ? AppColors.blueColor
-                                  : Colors.grey.shade300,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              plan.planName,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    isSelected
-                                        ? AppColors.blueColor
-                                        : Colors.black,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const Spacer(),
-                            Text(
-                              "\$${plan.price.toStringAsFixed(2)}",
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    isSelected
-                                        ? AppColors.blueColor
-                                        : Colors.black,
-                              ),
-                            ),
-                            Text(
-                              plan.duration,
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ==========================================
-  // PAYMENT METHOD SELECTION
-  // ==========================================
-  Widget _buildPaymentMethodSelection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            "STEP 2: Select Payment Method",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: AppColors.DarkBlueGrey,
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        StreamBuilder<QuerySnapshot>(
-          stream: _dbService.getPaymentMethodsList(_gymId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  "No payment methods added by Admin yet.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.red),
-                ),
-              );
-            }
-
-            var methods =
-                snapshot.data!.docs
-                    .map((doc) => PaymentMethodModel.fromFirestore(doc))
-                    .toList();
-
-            return Column(
-              children:
-                  methods.map((method) {
-                    bool isSelected = _selectedMethodId == method.id;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedMethodId = method.id;
-                          _selectedMethodType = method.typeLabel;
-                          _selectedMethodLabel = method.displayName;
-                          _selectedAccountTitle = method.accountTitle;
-                          _selectedAccountNumber = method.accountNumber;
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
-                        ),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color:
-                              isSelected
-                                  ? AppColors.blueColor.withOpacity(0.1)
-                                  : Colors.white,
-                          border: Border.all(
-                            color:
-                                isSelected
-                                    ? AppColors.blueColor
-                                    : Colors.grey.shade300,
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              method.icon,
-                              color:
-                                  isSelected
-                                      ? AppColors.blueColor
-                                      : Colors.grey,
-                              size: 30,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    method.typeLabel,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    method.accountTitle,
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                                  Text(
-                                    method.accountNumber,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (isSelected)
-                              const Icon(
-                                Icons.check_circle,
-                                color: AppColors.blueColor,
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  // ==========================================
-  // SCREENSHOT UPLOAD
-  // ==========================================
-  Widget _buildScreenshotUpload() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            "STEP 3: Upload Payment Screenshot",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: AppColors.DarkBlueGrey,
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: _isUploading ? null : _pickImage,
-          child: Container(
-            height: 150,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey),
-            ),
-            child:
-                _imageBytes != null
-                    ? Stack(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.memory(
-                            _imageBytes!,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                          ),
-                        ),
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: CircleAvatar(
-                            backgroundColor: Colors.red,
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.close,
-                                size: 16,
-                                color: Colors.white,
-                              ),
-                              onPressed:
-                                  _isUploading
-                                      ? null
-                                      : () =>
-                                          setState(() => _imageBytes = null),
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                    : const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.camera_alt, size: 40, color: Colors.grey),
-                          SizedBox(height: 8),
-                          Text("Tap to upload screenshot"),
-                          SizedBox(height: 4),
-                          Text(
-                            "(Max 500KB)",
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ==========================================
   // PAY NOW BUTTON
   // ==========================================
   Widget _buildPayNowButton() {
@@ -846,13 +498,18 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: Text(
-          "PAY NOW \$${_selectedPlanPrice.toStringAsFixed(2)}",
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        child: ValueListenableBuilder<double>(
+          valueListenable: _priceNotifier,
+          builder: (context, price, _) {
+            return Text(
+              "PAY NOW \$${price.toStringAsFixed(2)}",
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            );
+          },
         ),
       ),
     );
@@ -973,7 +630,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
         }
 
         if (snapshot.hasError) {
-          print("History Error: ${snapshot.error}");
+          debugPrint("History Error: ${snapshot.error}");
           return Center(
             child: Text(
               "Error: ${snapshot.error}",
@@ -1084,6 +741,464 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
           },
         );
       },
+    );
+  }
+}
+
+// ==========================================
+// PLAN SELECTOR — isolated so tapping a plan only rebuilds this widget,
+// not the whole payment screen (status card, transaction history, etc).
+// ==========================================
+class _PlanSelector extends StatefulWidget {
+  final String gymId;
+  final void Function(
+    String planId,
+    String planName,
+    double price,
+    String duration,
+  )
+  onSelected;
+
+  const _PlanSelector({required this.gymId, required this.onSelected});
+
+  @override
+  State<_PlanSelector> createState() => _PlanSelectorState();
+}
+
+class _PlanSelectorState extends State<_PlanSelector> {
+  final DatabaseService _dbService = DatabaseService();
+  String? _selectedPlanId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            "STEP 1: Select Plan",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: AppColors.DarkBlueGrey,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 140,
+          child: StreamBuilder<QuerySnapshot>(
+            stream: _dbService.getMembershipPlans(widget.gymId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return const Center(
+                  child: Text(
+                    "No plans available.\nAsk admin to create plans.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                );
+              }
+
+              var plans =
+                  snapshot.data!.docs
+                      .map((doc) => MembershipPlanModel.fromFirestore(doc))
+                      .toList();
+
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: plans.length,
+                itemBuilder: (context, index) {
+                  var plan = plans[index];
+                  bool isSelected = _selectedPlanId == plan.id;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() => _selectedPlanId = plan.id);
+                      widget.onSelected(
+                        plan.id,
+                        plan.planName,
+                        plan.price,
+                        plan.duration,
+                      );
+                    },
+                    child: Container(
+                      width: 150,
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        color:
+                            isSelected
+                                ? AppColors.blueColor.withOpacity(0.1)
+                                : Colors.white,
+                        border: Border.all(
+                          color:
+                              isSelected
+                                  ? AppColors.blueColor
+                                  : Colors.grey.shade300,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              plan.planName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    isSelected
+                                        ? AppColors.blueColor
+                                        : Colors.black,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const Spacer(),
+                            Text(
+                              "\$${plan.price.toStringAsFixed(2)}",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    isSelected
+                                        ? AppColors.blueColor
+                                        : Colors.black,
+                              ),
+                            ),
+                            Text(
+                              plan.duration,
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ==========================================
+// PAYMENT METHOD SELECTOR — isolated so tapping a method only rebuilds
+// this widget, not the whole payment screen.
+// ==========================================
+class _PaymentMethodSelector extends StatefulWidget {
+  final String gymId;
+  final void Function(
+    String id,
+    String type,
+    String label,
+    String accountTitle,
+    String accountNumber,
+  )
+  onSelected;
+
+  const _PaymentMethodSelector({
+    required this.gymId,
+    required this.onSelected,
+  });
+
+  @override
+  State<_PaymentMethodSelector> createState() =>
+      _PaymentMethodSelectorState();
+}
+
+class _PaymentMethodSelectorState extends State<_PaymentMethodSelector> {
+  final DatabaseService _dbService = DatabaseService();
+  String? _selectedMethodId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            "STEP 2: Select Payment Method",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: AppColors.DarkBlueGrey,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        StreamBuilder<QuerySnapshot>(
+          stream: _dbService.getPaymentMethodsList(widget.gymId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  "No payment methods added by Admin yet.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.red),
+                ),
+              );
+            }
+
+            var methods =
+                snapshot.data!.docs
+                    .map((doc) => PaymentMethodModel.fromFirestore(doc))
+                    .toList();
+
+            return Column(
+              children:
+                  methods.map((method) {
+                    bool isSelected = _selectedMethodId == method.id;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => _selectedMethodId = method.id);
+                        widget.onSelected(
+                          method.id,
+                          method.typeLabel,
+                          method.displayName,
+                          method.accountTitle,
+                          method.accountNumber,
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color:
+                              isSelected
+                                  ? AppColors.blueColor.withOpacity(0.1)
+                                  : Colors.white,
+                          border: Border.all(
+                            color:
+                                isSelected
+                                    ? AppColors.blueColor
+                                    : Colors.grey.shade300,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              method.icon,
+                              color:
+                                  isSelected
+                                      ? AppColors.blueColor
+                                      : Colors.grey,
+                              size: 30,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    method.typeLabel,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    method.accountTitle,
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                  Text(
+                                    method.accountNumber,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isSelected)
+                              const Icon(
+                                Icons.check_circle,
+                                color: AppColors.blueColor,
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+// ==========================================
+// SCREENSHOT UPLOADER — isolated so picking/removing an image only
+// rebuilds this widget. Exposes a `clear()` method via State so the
+// parent can reset it after a successful submit.
+// ==========================================
+class _ScreenshotUploader extends StatefulWidget {
+  final bool isUploading;
+  final ValueChanged<Uint8List?> onImageChanged;
+
+  const _ScreenshotUploader({
+    super.key,
+    required this.isUploading,
+    required this.onImageChanged,
+  });
+
+  @override
+  State<_ScreenshotUploader> createState() => _ScreenshotUploaderState();
+}
+
+class _ScreenshotUploaderState extends State<_ScreenshotUploader> {
+  Uint8List? _imageBytes;
+
+  void clear() {
+    if (mounted) setState(() => _imageBytes = null);
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 40,
+      );
+
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+
+        debugPrint(
+          "Image picked: ${bytes.length} bytes (${(bytes.length / 1024).toStringAsFixed(1)} KB)",
+        );
+
+        if (bytes.length > 500000) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  "Image too large! Max 500KB allowed. Please pick a smaller image.",
+                ),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
+          return;
+        }
+
+        setState(() => _imageBytes = bytes);
+        widget.onImageChanged(bytes);
+      }
+    } catch (e) {
+      debugPrint("Image pick error: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error picking image: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            "STEP 3: Upload Payment Screenshot",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: AppColors.DarkBlueGrey,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: widget.isUploading ? null : _pickImage,
+          child: Container(
+            height: 150,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey),
+            ),
+            child:
+                _imageBytes != null
+                    ? Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.memory(
+                            _imageBytes!,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          ),
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.red,
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.close,
+                                size: 16,
+                                color: Colors.white,
+                              ),
+                              onPressed:
+                                  widget.isUploading
+                                      ? null
+                                      : () {
+                                        setState(() => _imageBytes = null);
+                                        widget.onImageChanged(null);
+                                      },
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                    : const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.camera_alt, size: 40, color: Colors.grey),
+                          SizedBox(height: 8),
+                          Text("Tap to upload screenshot"),
+                          SizedBox(height: 4),
+                          Text(
+                            "(Max 500KB)",
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+          ),
+        ),
+      ],
     );
   }
 }

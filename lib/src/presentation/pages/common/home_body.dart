@@ -10,8 +10,6 @@ import 'package:gym_lead_master/src/core/widgets/notification_bell.dart';
 import 'package:gym_lead_master/src/data/gym_members_data.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/detail_live_member/exercise_card_group.dart';
 import 'package:gym_lead_master/src/presentation/pages/common/detail_live_member/live_total_members_number.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/notifications/member_notifications_screen.dart';
-import 'package:gym_lead_master/src/presentation/pages/admin_pages/notifications/admin_notifications_screen.dart';
 import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 class HomeBody extends StatefulWidget {
@@ -54,12 +52,7 @@ class _HomeBodyState extends State<HomeBody> {
                 color: Colors.white,
               ),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const AdminNotificationsScreen(),
-                  ),
-                );
+                Navigator.pushNamed(context, AppRoutes.adminNotificationsPage);
               },
             ),
           const SizedBox(width: 8),

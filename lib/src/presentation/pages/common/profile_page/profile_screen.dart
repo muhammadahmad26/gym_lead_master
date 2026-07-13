@@ -1,24 +1,18 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/services.dart';
 import 'package:gym_lead_master/services/cloudinary_service.dart';
 import 'package:gym_lead_master/services/settings_service.dart';
 import 'package:gym_lead_master/src/core/constants/appColor.dart';
 import 'package:gym_lead_master/src/core/constants/app_images.dart';
 import 'package:gym_lead_master/src/core/constants/app_text_size.dart';
-import 'package:gym_lead_master/src/core/utils/app_responsive.dart';
 import 'package:gym_lead_master/src/core/widgets/custom_textForm_field.dart';
 import 'package:gym_lead_master/src/core/widgets/passwordField.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/profile_page/term_and_conditions_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-// Import New Professional Screens
-import 'package:gym_lead_master/src/presentation/pages/common/profile_page/help_faq_screen.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/profile_page/contact_support_screen.dart';
-import 'package:gym_lead_master/src/presentation/pages/common/profile_page/about_app_screen.dart';
+import 'package:gym_lead_master/src/presentation/routes/appRoutes.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool isAdmin;
@@ -53,7 +47,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadUserData();
     _loadSettings();
   }
-    @override
+
+  @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
@@ -78,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (doc.exists) {
         var data = doc.data()!;
         String base64Image = data['profileImageBase64'] ?? "";
-        String imageUrl = data['profileImageUrl'] ?? "";
+         String imageUrl = data['profileImageUrl'] ?? "";
         setState(() {
           _userData = {
             'name': data['name'] ?? "User",
@@ -104,7 +99,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
       }
     } catch (e) {
-      print("ERROR LOADING USER DATA: $e");
+      debugPrint("ERROR LOADING USER DATA: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Couldn't load your profile: $e")),
+        );
+      }
     }
   }
 
@@ -158,8 +158,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'profileImageBase64': FieldValue.delete(),
                   'profileImageUrl': imageUrl,
                 });
-          // ignore: empty_catches
-          } catch (e) {}
+          } catch (e) {
+            debugPrint("Failed to sync profile image to member record: $e");
+          }
         }
 
         if (mounted) {
@@ -257,34 +258,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'name': _nameController.text.trim(),
-      'location': _locationController.text.trim(),
-    });
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'name': _nameController.text.trim(),
+        'location': _locationController.text.trim(),
+      });
 
-    if (!widget.isAdmin && _userData!['gymId']!.isNotEmpty) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('gyms')
-            .doc(_userData!['gymId'])
-            .collection('members')
-            .doc(uid)
-            .update({
-              'name': _nameController.text.trim(),
-              'location': _locationController.text.trim(),
-            });
-      // ignore: empty_catches
-      } catch (e) {}
+      if (!widget.isAdmin && _userData!['gymId']!.isNotEmpty) {
+        try {
+          await FirebaseFirestore.instance
+              .collection('gyms')
+              .doc(_userData!['gymId'])
+              .collection('members')
+              .doc(uid)
+              .update({
+                'name': _nameController.text.trim(),
+                'location': _locationController.text.trim(),
+              });
+        } catch (e) {
+          debugPrint("Failed to sync name/location to member record: $e");
+        }
+      }
+
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Profile Updated")));
+      setState(() {
+        _userData!['name'] = _nameController.text;
+        _userData!['location'] = _locationController.text;
+      });
+    } catch (e) {
+      debugPrint("Failed to update profile: $e");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Couldn't update profile: $e")),
+      );
     }
-
-    Navigator.pop(context);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Profile Updated")));
-    setState(() {
-      _userData!['name'] = _nameController.text;
-      _userData!['location'] = _locationController.text;
-    });
   }
 
   Future<void> _updateEmail() async {
@@ -315,33 +326,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'location': _locationController.text.trim(),
-    });
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'location': _locationController.text.trim(),
+      });
 
-    if (!widget.isAdmin && _userData!['gymId']!.isNotEmpty) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('gyms')
-            .doc(_userData!['gymId'])
-            .collection('members')
-            .doc(uid)
-            .update({'location': _locationController.text.trim()});
-      // ignore: empty_catches
-      } catch (e) {}
+      if (!widget.isAdmin && _userData!['gymId']!.isNotEmpty) {
+        try {
+          await FirebaseFirestore.instance
+              .collection('gyms')
+              .doc(_userData!['gymId'])
+              .collection('members')
+              .doc(uid)
+              .update({'location': _locationController.text.trim()});
+        } catch (e) {
+          debugPrint("Failed to sync location to member record: $e");
+        }
+      }
+
+      if (!mounted) return;
+      setState(() => _userData!['location'] = _locationController.text);
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Location Updated")));
+    } catch (e) {
+      debugPrint("Failed to update location: $e");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Couldn't update location: $e")),
+      );
     }
-
-    setState(() => _userData!['location'] = _locationController.text);
-    Navigator.pop(context);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Location Updated")));
   }
 
   Future<void> _changePassword() async {
-    if (_currentPassController.text.isEmpty || _newPassController.text.isEmpty) {
+    if (_currentPassController.text.isEmpty || _newPassController.text.isEmpty)
       return;
-    }
     if (_newPassController.text != _confirmPassController.text) {
       ScaffoldMessenger.of(
         context,
@@ -375,7 +395,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     if (mounted) {
-      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.loginChooserPage,
+        (route) => false,
+      );
     }
   }
 
@@ -427,345 +451,316 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    // ✅ AnnotatedRegion: Status bar ke icons (time, battery) ko WHITE banayega
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent, // Status bar transparent
-        statusBarIconBrightness: Brightness.light, // Android: White icons
-        statusBarBrightness: Brightness.dark, // iOS: White icons
-      ),
-      child: Theme(
-        data: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
-        child: Scaffold(
-          body: SingleChildScrollView(
-            // ❌ SafeArea hataya diya yahan se
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ==================== PROFILE HEADER ====================
-                Container(
-                  padding: EdgeInsets.only(
-                    // ✅ Yeh status bar ki height + 20px extra space dega
-                    // Isse content status bar ke neeche aayega, aur blue background peeche chala jaayega
-                    top:
-                        MediaQuery.of(context).padding.top +
-                        AppResponsive.padding(context, 20),
-                    left: AppResponsive.padding(context, 20),
-                    right: AppResponsive.padding(context, 20),
-                    bottom: AppResponsive.padding(context, 30),
+    return Theme(
+      data: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      child: Scaffold(
+        body: SafeArea(
+          child: SingleChildScrollView(
+          // padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // const SizedBox(height: 40),
+
+              // ==================== PROFILE HEADER ====================
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.blueColor, Colors.blueAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.blueColor, Colors.blueAccent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(30),
-                      bottomRight: Radius.circular(30),
-                    ),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black26, blurRadius: 10),
-                    ],
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
                   ),
-                  child: Column(
-                    children: [
-                      Center(
-                        child: GestureDetector(
-                          onTap: _isImageUploading ? null : _pickAndUploadImage,
-                          child: Stack(
-                            children: [
-                              Container(
-                                width: AppResponsive.iconSize(context, 100),
-                                height: AppResponsive.iconSize(context, 100),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.grey[200],
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 3,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 8,
-                                      offset: Offset(0, 4),
-                                    ),
-                                  ],
+                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
+                ),
+                child: Column(
+                  children: [
+                    Center(
+                      child: GestureDetector(
+                        onTap: _isImageUploading ? null : _pickAndUploadImage,
+                        child: Stack(
+                          children: [
+                            Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.grey[200],
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 3,
                                 ),
-                                child: ClipOval(child: _buildProfileImage()),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 8,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              Positioned(
-                                bottom: 2,
-                                right: 2,
-                                child:
-                                    _isImageUploading
-                                        ? Container(
-                                          width: 36,
-                                          height: 36,
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: Colors.grey[300]!,
-                                            ),
-                                          ),
-                                          child: const SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2.5,
-                                              color: AppColors.blueColor,
-                                            ),
-                                          ),
-                                        )
-                                        : Container(
-                                          width: 36,
-                                          height: 36,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.blueColor,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: 2,
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            Icons.camera_alt,
-                                            size: 18,
-                                            color: Colors.white,
+                              child: ClipOval(child: _buildProfileImage()),
+                            ),
+                            Positioned(
+                              bottom: 2,
+                              right: 2,
+                              child:
+                                  _isImageUploading
+                                      ? Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.grey[300]!,
                                           ),
                                         ),
+                                        child: const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            color: AppColors.blueColor,
+                                          ),
+                                        ),
+                                      )
+                                      : Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.blueColor,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black26,
+                                              blurRadius: 4,
+                                            ),
+                                          ],
+                                        ),
+                                        child: const Icon(
+                                          Icons.camera_alt,
+                                          size: 20,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (_isImageUploading)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          _uploadStatus,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: Text(
+                        _userData!['name'] ?? "User",
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Text(
+                        _userData!['email'] ?? "",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ),
+                    if (_userData!['location']!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.location_on,
+                                color: Colors.white70,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _userData!['location']!,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white70,
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                      if (_isImageUploading)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            _uploadStatus,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
+                    const SizedBox(height: 8),
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
                         ),
-                      const SizedBox(height: 12),
-                      Center(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white24),
+                        ),
                         child: Text(
-                          _userData!['name'] ?? "User",
-                          style: AppResponsive.textStyle(
-                            context,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
+                          (_userData!['role'] ?? "").toUpperCase(),
+                          style: const TextStyle(
                             color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                      Center(
-                        child: Text(
-                          _userData!['email'] ?? "",
-                          style: AppResponsive.textStyle(
-                            context,
-                            fontSize: 14,
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ),
-                      if (_userData!['location']!.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Center(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.location_on,
-                                  color: Colors.white70,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  _userData!['location']!,
-                                  style: AppResponsive.textStyle(
-                                    context,
-                                    fontSize: 13,
-                                    color: Colors.white70,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 8),
-                      Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            (_userData!['role'] ?? "").toUpperCase(),
-                            style: AppResponsive.textStyle(
-                              context,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // ==================== PROFILE SETTINGS ====================
-                _buildSectionHeader("Profile Settings"),
-                Card(
-                  child: Column(
-                    children: [
-                      _buildTile(
-                        Icons.edit,
-                        "Edit Profile",
-                        () => _showEditProfileDialog(),
-                      ),
-                      _buildTile(
-                        Icons.email,
-                        "Update Email",
-                        () => _showEditEmailDialog(),
-                      ),
-                      _buildTile(
-                        Icons.location_on,
-                        "Update Location",
-                        () => _showEditLocationDialog(),
-                      ),
-                      if (_profileImageBytes != null)
-                        _buildTile(
-                          Icons.delete_outline,
-                          "Remove Profile Image",
-                          _removeImage,
-                          color: Colors.red,
-                        ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // ==================== SECURITY SETTINGS ====================
-                _buildSectionHeader("Security Settings"),
-                Card(
-                  child: _buildTile(
-                    Icons.lock,
-                    "Change Password",
-                    () => _showChangePasswordDialog(),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // ==================== SUPPORT ====================
-                _buildSectionHeader("Support"),
-                Card(
-                  child: Column(
-                    children: [
-                      _buildTile(Icons.help_center, "Help & FAQ", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const HelpFaqScreen(),
-                          ),
-                        );
-                      }),
-                      _buildTile(Icons.contact_support, "Contact Support", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ContactSupportScreen(),
-                          ),
-                        );
-                      }),
-                      _buildTile(Icons.info, "About App", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const AboutAppScreen(),
-                          ),
-                        );
-                      }),
-                      _buildTile(Icons.description, "Terms & Conditions", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const TermsAndConditionsScreen(),
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // ==================== LOGOUT ====================
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.logout, color: Colors.white),
-                    label: const Text("Logout", style: TextStyle(fontSize: 18)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: _logout,
-                  ),
+                  ],
                 ),
+              ),
 
-                const SizedBox(height: 30),
-              ],
-            ),
+              const SizedBox(height: 20),
+
+              // ==================== PROFILE SETTINGS ====================
+              _buildSectionHeader("Profile Settings"),
+              Card(
+                child: Column(
+                  children: [
+                    _buildTile(
+                      Icons.edit,
+                      "Edit Profile",
+                      () => _showEditProfileDialog(),
+                    ),
+                    _buildTile(
+                      Icons.email,
+                      "Update Email",
+                      () => _showEditEmailDialog(),
+                    ),
+                    _buildTile(
+                      Icons.location_on,
+                      "Update Location",
+                      () => _showEditLocationDialog(),
+                    ),
+                    if (_profileImageBytes != null)
+                      _buildTile(
+                        Icons.delete_outline,
+                        "Remove Profile Image",
+                        _removeImage,
+                        color: Colors.red,
+                      ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ==================== SECURITY SETTINGS ====================
+              _buildSectionHeader("Security Settings"),
+              Card(
+                child: _buildTile(
+                  Icons.lock,
+                  "Change Password",
+                  () => _showChangePasswordDialog(),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ==================== SUPPORT (CONNECTED TO NEW SCREENS) ====================
+              _buildSectionHeader("Support"),
+              Card(
+                child: Column(
+                  children: [
+                    _buildTile(Icons.help_center, "Help & FAQ", () {
+                      Navigator.pushNamed(context, AppRoutes.helpFaqPage);
+                    }),
+                    _buildTile(Icons.contact_support, "Contact Support", () {
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.contactSupportPage,
+                      );
+                    }),
+                    _buildTile(Icons.info, "About App", () {
+                      Navigator.pushNamed(context, AppRoutes.aboutAppPage);
+                    }),
+                    _buildTile(Icons.description, "Terms & Conditions", () {
+                      Navigator.pushNamed(context, AppRoutes.termsPage);
+                    }),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ==================== LOGOUT ====================
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.logout, color: Colors.white),
+                  label: const Text("Logout", style: TextStyle(fontSize: 18)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: _logout,
+                ),
+              ),
+
+              const SizedBox(height: 30),
+            ],
           ),
         ),
+      ),
       ),
     );
   }
 
   // ==================== PROFILE IMAGE WIDGET ====================
   Widget _buildProfileImage() {
-    // Priority 1: Cloudinary URL
-    if (_profileImageUrl.isNotEmpty) {
-      return Image.network(
-        _profileImageUrl,
-        fit: BoxFit.cover,
-        width: 120,
-        height: 120,
-        errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
-      );
-    }
-    // Priority 2: Old Base64
-    if (_profileImageBytes != null && _profileImageBytes!.isNotEmpty) {
-      return Image.memory(
-        _profileImageBytes!,
-        fit: BoxFit.cover,
-        width: 120,
-        height: 120,
-        errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
-      );
-    }
-    // Priority 3: Default
-    return _buildDefaultIcon();
+  // Priority 1: Cloudinary URL
+  if (_profileImageUrl.isNotEmpty) {
+    return Image.network(
+      _profileImageUrl,
+      fit: BoxFit.cover,
+      width: 120,
+      height: 120,
+      errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
+    );
   }
+  // Priority 2: Old Base64
+  if (_profileImageBytes != null && _profileImageBytes!.isNotEmpty) {
+    return Image.memory(
+      _profileImageBytes!,
+      fit: BoxFit.cover,
+      width: 120,
+      height: 120,
+      errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
+    );
+  }
+  // Priority 3: Default
+  return _buildDefaultIcon();
+}
 
   Widget _buildDefaultIcon() {
     return Container(
