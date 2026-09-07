@@ -270,8 +270,7 @@ class DatabaseService {
         .get();
   }
 
-  ///  FIX: Find NOT_PAID transaction from already-fetched results
-  /// Returns the DocumentReference of the NOT_PAID transaction, or null
+
   Future<DocumentReference?> findOrCreateNotPaidTransaction(
     String gymId,
     String memberId,

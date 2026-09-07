@@ -16,9 +16,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  // ==========================================
-  // ANIMATION CONTROLLERS
-  // ==========================================
+  
   late AnimationController _logoController;
   late AnimationController _textController;
   late AnimationController _loaderController;
@@ -205,9 +203,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  // ==========================================
-  // UI BUILD
-  // ==========================================
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.sizeOf(context);
@@ -230,9 +225,7 @@ class _SplashScreenState extends State<SplashScreen>
         ),
         child: Stack(
           children: [
-            // ==========================================
-            // BACKGROUND GLOW EFFECTS (Premium touch)
-            // ==========================================
+            
             Positioned(
               top: -100,
               right: -100,
@@ -258,9 +251,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
 
-            // ==========================================
-            // MAIN CONTENT
-            // ==========================================
+            
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -376,7 +367,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                   const SizedBox(height: 25),
 
-                  // BOTTOM SECTION (Fade)
+                  
                   AnimatedBuilder(
                     animation: _textController,
                     builder: (context, child) {
@@ -418,9 +409,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-// ==========================================
-// CUSTOM PREMIUM LOADER PAINTER
-// ==========================================
+
 class _LoaderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

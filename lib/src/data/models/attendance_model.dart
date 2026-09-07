@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Represents a month-level attendance document
+
 class AttendanceMonthModel {
-  final String id; // "2026-06"
+  final String id; 
   final int year;
-  final int month; // 1-12
+  final int month;
   final String gymId;
   final int totalMembers;
   final DateTime? createdAt;
@@ -61,7 +61,7 @@ class AttendanceMonthModel {
 
 /// Single day's attendance entry
 class DayAttendance {
-  final String status; // "present" or "absent"
+  final String status; 
   final DateTime? checkInTime;
 
   DayAttendance({required this.status, this.checkInTime});
@@ -91,7 +91,7 @@ class MemberAttendanceModel {
   final String memberId;
   final String memberName;
   final String memberEmail;
-  final Map<int, DayAttendance> days; // day number -> attendance
+  final Map<int, DayAttendance> days; 
   final int totalPresent;
   final DateTime? updatedAt;
 
@@ -105,26 +105,24 @@ class MemberAttendanceModel {
     this.updatedAt,
   });
 
-  /// Total days in the month (calculated from year/month)
   int totalDaysInMonth(int year, int month) {
     return DateTime(year, month + 1, 0).day;
   }
 
-  /// Calculate absent days dynamically
   int totalAbsent(int year, int month) {
     int totalDays = totalDaysInMonth(year, month);
-    // Only count days up to today if current month
+   
     DateTime now = DateTime.now();
     int countableDays;
     if (year == now.year && month == now.month) {
-      countableDays = now.day; // Up to today
+      countableDays = now.day; 
     } else {
-      countableDays = totalDays; // Full month for past months
+      countableDays = totalDays; 
     }
     return countableDays - totalPresent;
   }
 
-  /// Attendance percentage
+
   double attendancePercentage(int year, int month) {
     DateTime now = DateTime.now();
     int countableDays;
@@ -181,7 +179,6 @@ class MemberAttendanceModel {
   }
 }
 
-/// Summary stats for a day
 class AttendanceDaySummary {
   final int totalMembers;
   final int presentCount;

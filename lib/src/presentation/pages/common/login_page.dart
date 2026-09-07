@@ -86,10 +86,7 @@ class _LoginPageState extends State<LoginPage> {
             );
           }
 
-          // 4. Members need admin approval before they can log in. The
-          // approval status lives on the member record (gyms/{gymId}/
-          // members/{uid}) — that's the doc an admin can actually write
-          // to (see firestore.rules), so it's the source of truth here.
+          
           String? memberGymId =
               (userDoc.data() as Map<String, dynamic>)['gymId'];
           if (memberGymId != null) {

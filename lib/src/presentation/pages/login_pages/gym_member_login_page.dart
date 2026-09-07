@@ -15,7 +15,7 @@ class GymMemberLogInPage extends StatelessWidget {
         child: Center(
           child: LoginPage(
             route: AppRoutes.memberHomePage,
-            expectedRole: 'member', // NEW: Only allow Members/Trainers
+            expectedRole: 'member', 
             recognizer:
                 TapGestureRecognizer()
                   ..onTap = () {

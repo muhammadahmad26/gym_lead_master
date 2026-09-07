@@ -437,7 +437,7 @@ class _AdminPymentPageState extends State<AdminPymentPage>
       return;
     }
 
-    // ✅ Check if it's a URL (Cloudinary) or old Base64
+    // Check if it's a URL (Cloudinary) or old Base64
     bool isUrl = imageUrl.startsWith('http');
 
     showDialog(
@@ -497,7 +497,7 @@ class _AdminPymentPageState extends State<AdminPymentPage>
                       child: Container(
                         width: double.infinity,
                         color: Colors.grey[100],
-                        // ✅ Ternary Operator: Show Network Image for URL, Memory Image for Base64
+                        // Ternary Operator: Show Network Image for URL, Memory Image for Base64
                         child:
                             isUrl
                                 ? Image.network(

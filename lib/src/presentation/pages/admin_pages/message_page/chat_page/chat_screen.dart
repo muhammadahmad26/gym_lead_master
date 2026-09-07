@@ -80,8 +80,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               .doc(currentUserId)
               .get();
 
-      // Safe null-aware access: senderDoc['name'] throws if the doc
-      // doesn't exist or the field is missing. .data() as a Map avoids that.
+
       Map<String, dynamic>? senderDocData =
           senderDoc.data() as Map<String, dynamic>?;
 
@@ -303,7 +302,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Center(
-                    child: Text("No messages yet. Say Hi! 👋"),
+                    child: Text("No messages yet. Say Hi! "),
                   );
                 }
 
@@ -334,7 +333,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
                 if (messages.isEmpty) {
                   return const Center(
-                    child: Text("No messages yet. Say Hi! 👋"),
+                    child: Text("No messages yet. Say Hi! "),
                   );
                 }
 

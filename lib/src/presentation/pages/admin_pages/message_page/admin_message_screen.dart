@@ -196,7 +196,7 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
 
   // Base64 Profile Avatar
  Widget _buildProfileAvatar({String? imageUrl, String? base64Image, double radius = 25}) {
-  // Priority 1: Cloudinary URL (New fast way)
+  //  Cloudinary URL (New fast way)
   if (imageUrl != null && imageUrl.isNotEmpty) {
     return CircleAvatar(
       radius: radius,
@@ -206,7 +206,7 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
     );
   }
   
-  // Priority 2: Old Base64 (Fallback for old users)
+  // Old Base64 (Fallback for old users)
   if (base64Image != null && base64Image.isNotEmpty) {
     try {
       return CircleAvatar(
@@ -223,7 +223,7 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
     }
   }
 
-  // Priority 3: Default Icon
+  //  Default Icon
   return CircleAvatar(
     radius: radius,
     backgroundColor: Colors.grey[300],

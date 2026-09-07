@@ -17,9 +17,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
   final TextEditingController _titleCtrl = TextEditingController();
   final TextEditingController _msgCtrl = TextEditingController();
 
-  // These are updated via callbacks from the split-out widgets below WITHOUT
-  // calling setState() on this parent — so picking a type / radio / checkbox
-  // no longer rebuilds the Title/Message fields or the rest of the form.
+
   NotificationType _selectedType = NotificationType.general;
   String _sendTo = 'all'; // 'all' or specific userIds
   List<String> _selectedUserIds = [];
@@ -78,16 +76,14 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
               TextFormField(controller: _msgCtrl, validator: (v) => v!.isEmpty ? "Required" : null, maxLines: 4, decoration: const InputDecoration(labelText: "Message", border: OutlineInputBorder())),
               const SizedBox(height: 16),
 
-              // Type Dropdown — split into its own widget so selecting a type
-              // only rebuilds the dropdown, not the Title/Message fields above.
+             
               _NotificationTypeDropdown(
                 initialType: _selectedType,
                 onChanged: (val) => _selectedType = val,
               ),
               const SizedBox(height: 16),
 
-              // Send To Selection — split into its own widget so toggling the
-              // radio buttons / member checkboxes only rebuilds this section.
+              
               _SendToSelector(
                 gymId: widget.gymId,
                 onChanged: (sendTo, selectedUserIds) {
@@ -116,8 +112,7 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
   }
 }
 
-/// Notification type dropdown, isolated so its own setState doesn't
-/// rebuild the parent screen's Title/Message fields.
+
 class _NotificationTypeDropdown extends StatefulWidget {
   final NotificationType initialType;
   final ValueChanged<NotificationType> onChanged;
@@ -148,9 +143,7 @@ class _NotificationTypeDropdownState extends State<_NotificationTypeDropdown> {
   }
 }
 
-/// "Send To" radio group + member checklist, isolated in its own
-/// StatefulWidget. Rebuilds triggered by picking a radio option or
-/// checking/unchecking a member no longer touch the parent screen at all.
+
 class _SendToSelector extends StatefulWidget {
   final String gymId;
   final void Function(String sendTo, List<String> selectedUserIds) onChanged;

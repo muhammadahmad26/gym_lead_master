@@ -135,13 +135,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
-      // ✅ STEP 1: Upload to Cloudinary
+      // Upload to Cloudinary
       String? imageUrl = await CloudinaryService().uploadImage(image);
 
       if (imageUrl != null) {
         String uid = FirebaseAuth.instance.currentUser!.uid;
 
-        // ✅ STEP 2: Save URL in Firestore (No Base64!)
+        // Save URL in Firestore (No Base64!)
         await FirebaseFirestore.instance.collection('users').doc(uid).update({
           'profileImageBase64': FieldValue.delete(), // Delete old base64
           'profileImageUrl': imageUrl, // Save new URL
@@ -172,7 +172,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           });
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text("Profile image updated! ✅"),
+              content: Text("Profile image updated! "),
               backgroundColor: Colors.green,
             ),
           );

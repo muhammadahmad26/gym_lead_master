@@ -44,7 +44,7 @@ class _AboutAppScreenState extends State<AboutAppScreen>
     super.dispose();
   }
 
-  // ✅ FIXED: Rate App - Try directly without canLaunchUrl check
+  // Rate App - Try directly without canLaunchUrl check
   Future<void> _rateApp() async {
     if (_isLaunching) return;
     setState(() => _isLaunching = true);
@@ -52,7 +52,7 @@ class _AboutAppScreenState extends State<AboutAppScreen>
     try {
       final Uri url = Uri.parse(_appStoreUrl);
 
-      // ✅ FIX: Just try launching - don't check canLaunchUrl first
+      // Just try launching - don't check canLaunchUrl first
       await launchUrl(
         url,
         mode: LaunchMode.externalApplication,
@@ -75,11 +75,11 @@ class _AboutAppScreenState extends State<AboutAppScreen>
     }
   }
 
-  // ✅ FIXED: Share App
+  // Share App
   Future<void> _shareApp() async {
     try {
       await Share.share(
-        'Check out Gym Lead Master - The ultimate gym management app! 💪 Download now: $_appStoreUrl',
+        'Check out Gym Lead Master - The ultimate gym management app! Download now: $_appStoreUrl',
         subject: 'Gym Lead Master App',
       );
     } catch (e) {

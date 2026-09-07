@@ -156,7 +156,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
               bottom: 40,
               child: GestureDetector(
                 onTap:
-                    onCenterButtonTap, // This is already handled by passing null from member_home_page
+                    onCenterButtonTap, 
                 child: Container(
                   width: 50,
                   height: 50,

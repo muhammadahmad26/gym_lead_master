@@ -333,8 +333,7 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 }
 
-/// Role dropdown, isolated so picking a role doesn't rebuild the whole
-/// signup form (name/email/password/gymId/location fields above it).
+
 class _RoleDropdown extends StatefulWidget {
   final String initialRole;
   final ValueChanged<String> onChanged;

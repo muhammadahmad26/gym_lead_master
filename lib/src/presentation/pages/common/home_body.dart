@@ -153,7 +153,7 @@ class _HomeBodyState extends State<HomeBody> {
         ),
         const Spacer(),
 
-        // Same button as before — navigates to Active Member List
+        
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: AppButton(

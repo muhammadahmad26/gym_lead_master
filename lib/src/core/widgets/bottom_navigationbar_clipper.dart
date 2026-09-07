@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// A custom clipper that creates a notch in the center of the navigation bar.
 class NotchedBottomNavigationBarClipper extends CustomClipper<Path> {
   /// The radius of the circular notch.
   final double notchRadius;

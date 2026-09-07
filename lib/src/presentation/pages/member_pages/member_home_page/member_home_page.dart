@@ -69,9 +69,7 @@ class _MemeberHomePageState extends State<MemeberHomePage> {
     }
   }
 
-  // ==========================================
-  // UPDATED: Check both check-in time AND membership status
-  // ==========================================
+
   Future<void> _checkMemberStatus() async {
     try {
       String uid = FirebaseAuth.instance.currentUser!.uid;
@@ -116,9 +114,7 @@ class _MemeberHomePageState extends State<MemeberHomePage> {
     }
   }
 
-  // ==========================================
-  // ✅ FIXED: Already Checked In Dialog (Responsive Text)
-  // ==========================================
+ 
   void _showAlreadyCheckedInDialog() {
     showDialog(
       context: context,
@@ -204,9 +200,7 @@ class _MemeberHomePageState extends State<MemeberHomePage> {
     );
   }
 
-  // ==========================================
-  // ✅ FIXED: Payment Required Dialog (Responsive Text)
-  // ==========================================
+  
   void _showPaymentRequiredDialog() {
     showDialog(
       context: context,
@@ -323,9 +317,7 @@ class _MemeberHomePageState extends State<MemeberHomePage> {
     );
   }
 
-  // ==========================================
-  // ✅ FIXED: Check-In Dialog (Responsive Text)
-  // ==========================================
+  
   void _showCheckInDialog() {
     if (_gymId == "loading") {
       ScaffoldMessenger.of(

@@ -46,8 +46,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
   String? _selectedAccountTitle;
   String? _selectedAccountNumber;
 
-  // Price is shown live on the Pay button via this notifier instead of a
-  // full-screen setState, so picking a plan doesn't rebuild the whole page.
+  
   final ValueNotifier<double> _priceNotifier = ValueNotifier(0.0);
 
   late TabController _historyTabController;
@@ -90,16 +89,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
     super.dispose();
   }
 
-  // Image picking now lives entirely inside _ScreenshotUploader below —
-  // it reports the picked bytes back via a callback (no setState here),
-  // so picking/removing a screenshot no longer rebuilds the whole page.
-
-  // ==========================================
-  // COMPLETELY FIXED: Submit Payment with Timeout + Progress
-  // ==========================================
-  // ==========================================
-  // FIXED: Submit Payment using BASE64 (No Storage Needed)
-  // ==========================================
+ 
   Future<void> _submitPayment() async {
     if (_selectedPlanId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -136,7 +126,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
     });
 
     try {
-      // Find NOT_PAID transaction
+      
       debugPrint("STEP 1: Finding NOT_PAID transaction...");
       DocumentReference? notPaidRef = await _dbService
           .findOrCreateNotPaidTransaction(_gymId, _memberId)
@@ -167,9 +157,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
     //  Convert bytes to XFile and Upload to Cloudinary
     setState(() { _loadingMessage = "Uploading to cloud..."; _uploadProgress = 0.5; });
 
-    // Build the XFile straight from the in-memory bytes — no filesystem
-    // round-trip needed, which also means this works on web (where
-    // dart:io/path_provider temp files aren't available).
+    
     XFile imageFile = XFile.fromData(
       _imageBytes!,
       name: 'payment_screenshot.jpg',
@@ -182,7 +170,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
       throw Exception("Screenshot upload failed. Please try again.");
     }
 
-      // STEP 3: Update payment in Firestore
+      
       setState(() {
         _loadingMessage = "Finalizing...";
         _uploadProgress = 0.8;
@@ -202,7 +190,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
       paymentMethodLabel: _selectedMethodLabel!,
       accountTitle: _selectedAccountTitle!,
       accountNumber: _selectedAccountNumber!,
-      screenshotUrl: screenshotUrl, // ✅ Pass URL instead of Base64
+      screenshotUrl: screenshotUrl, 
     ).timeout(const Duration(seconds: 15), onTimeout: () { throw TimeoutException('Saving payment details timed out'); });
 
 
@@ -330,9 +318,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
     );
   }
 
-  // ==========================================
-  // STATUS CARD
-  // ==========================================
+  
   Widget _buildCurrentStatusCard() {
     return StreamBuilder<QuerySnapshot>(
       stream: _dbService.getMemberPaymentHistory(_gymId, _memberId),
@@ -482,10 +468,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
     );
   }
 
-  // Plan selection now lives in the standalone _PlanSelector widget below.
-
-  // PAY NOW BUTTON
-  // ==========================================
+  
   Widget _buildPayNowButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -515,9 +498,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
     );
   }
 
-  // ==========================================
-  // LOADING BUTTON with Progress Bar
-  // ==========================================
+  
   Widget _buildLoadingButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -574,9 +555,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
     );
   }
 
-  // ==========================================
-  // TRANSACTION HISTORY
-  // ==========================================
+  
   Widget _buildTransactionHistory() {
     return Column(
       children: [
@@ -745,10 +724,7 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
   }
 }
 
-// ==========================================
-// PLAN SELECTOR — isolated so tapping a plan only rebuilds this widget,
-// not the whole payment screen (status card, transaction history, etc).
-// ==========================================
+
 class _PlanSelector extends StatefulWidget {
   final String gymId;
   final void Function(
@@ -890,10 +866,7 @@ class _PlanSelectorState extends State<_PlanSelector> {
   }
 }
 
-// ==========================================
-// PAYMENT METHOD SELECTOR — isolated so tapping a method only rebuilds
-// this widget, not the whole payment screen.
-// ==========================================
+
 class _PaymentMethodSelector extends StatefulWidget {
   final String gymId;
   final void Function(

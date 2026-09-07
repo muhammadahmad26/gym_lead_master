@@ -213,7 +213,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
             // UPDATED: Logout button now calls _logout method with dialog
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              onPressed: _logout, // ✅ Changed from inline logout
+              onPressed: _logout, 
               child: const Text(
                 "Logout",
                 style: TextStyle(color: Colors.white),

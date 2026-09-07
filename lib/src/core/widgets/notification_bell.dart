@@ -25,7 +25,7 @@ class NotificationBell extends StatelessWidget {
         int unreadCount = 0;
 
         if (snapshot.hasData) {
-          // CLIENT-SIDE FILTER: Exclude deleted notifications
+         
           unreadCount = snapshot.data!.docs.where((doc) {
             var data = doc.data() as Map<String, dynamic>;
             return data['isDeleted'] != true;
@@ -33,7 +33,7 @@ class NotificationBell extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          debugPrint("⚠️ NotificationBell error: ${snapshot.error}");
+          debugPrint("NotificationBell error: ${snapshot.error}");
           return IconButton(
             onPressed: () {
               Navigator.pushNamed(context, AppRoutes.memberNotificationsPage);

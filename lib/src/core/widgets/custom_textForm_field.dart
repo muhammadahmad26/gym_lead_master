@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gym_lead_master/src/core/utils/app_responsive.dart'; // ✅ Import
+import 'package:gym_lead_master/src/core/utils/app_responsive.dart'; 
 
 class CustomTextFormField extends StatelessWidget {
   final String? icon_asset;
@@ -36,7 +36,7 @@ class CustomTextFormField extends StatelessWidget {
         obscureText: obsecuretext,
         keyboardType: keyboardType,
         validator: validator,
-        style: AppResponsive.textStyle(context, fontSize: 14), // Responsive Input Text
+        style: AppResponsive.textStyle(context, fontSize: 14), 
         decoration: InputDecoration(
           isDense: true,
           label: FittedBox( // Label ab kabhi cut nahi hoga
