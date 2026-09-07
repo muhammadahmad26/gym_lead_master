@@ -56,6 +56,56 @@ class _GymMembersPageState extends State<GymMembersPage> {
         ),
         backgroundColor: AppColors.DarkBlueGrey,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          if (_gymId != "loading")
+            StreamBuilder<QuerySnapshot>(
+              stream: _dbService.getPendingApprovalMembers(_gymId),
+              builder: (context, snapshot) {
+                int pendingCount = snapshot.data?.docs.length ?? 0;
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.how_to_reg),
+                      tooltip: "Pending Approvals",
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.pendingApprovalsPage,
+                          arguments: {'gymId': _gymId},
+                        );
+                      },
+                    ),
+                    if (pendingCount > 0)
+                      Positioned(
+                        right: 4,
+                        top: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            '$pendingCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+        ],
       ),
       body: AppBackGroundPage(
         child:
@@ -98,8 +148,22 @@ class _GymMembersPageState extends State<GymMembersPage> {
                       );
                     }
 
-                    var members = snapshot.data!.docs;
+                    var members =
+                        snapshot.data!.docs.where((doc) {
+                          var d = doc.data() as Map<String, dynamic>;
+                          return d['approvalStatus'] != 'pending';
+                        }).toList();
                     int totalMembers = members.length; // Calculate total count
+                    int expiredCount =
+                        members.where((doc) {
+                          var d = doc.data() as Map<String, dynamic>;
+                          if (d['membershipStatus'] != 'active') return false;
+                          if (d['membershipExpiresAt'] == null) return false;
+                          DateTime expiresAt =
+                              (d['membershipExpiresAt'] as Timestamp)
+                                  .toDate();
+                          return DateTime.now().isAfter(expiresAt);
+                        }).length;
 
                     return Column(
                       children: [
@@ -122,23 +186,48 @@ class _GymMembersPageState extends State<GymMembersPage> {
                               ),
                             ],
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          child: Column(
                             children: [
-                              const Icon(
-                                Icons.groups,
-                                color: Colors.white,
-                                size: 30,
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.groups,
+                                    color: Colors.white,
+                                    size: 30,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    "Total Members: $totalMembers",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 12),
-                              Text(
-                                "Total Members: $totalMembers",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
+                              if (expiredCount > 0) ...[
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    "⚠ $expiredCount membership${expiredCount > 1 ? 's' : ''} expired",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ],
                           ),
                         ),
@@ -249,7 +338,18 @@ class _GymMembersPageState extends State<GymMembersPage> {
                               Color statusColor = Colors.grey;
                               String statusLabel = "NOT PAID";
 
-                              if (mStatus == 'active') {
+                              bool isExpired = false;
+                              if (data['membershipExpiresAt'] != null) {
+                                DateTime expiresAt =
+                                    (data['membershipExpiresAt'] as Timestamp)
+                                        .toDate();
+                                isExpired = DateTime.now().isAfter(expiresAt);
+                              }
+
+                              if (mStatus == 'active' && isExpired) {
+                                statusColor = Colors.red;
+                                statusLabel = "EXPIRED";
+                              } else if (mStatus == 'active') {
                                 statusColor = Colors.green;
                                 statusLabel = "ACTIVE";
                               } else if (mStatus == 'pending') {

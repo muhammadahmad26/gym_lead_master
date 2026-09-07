@@ -35,6 +35,14 @@ service cloud.firestore {
         allow read: if isGymAdmin(gymId) || (isGymMember(gymId) && resource.data.memberId == request.auth.uid);
         allow create: if isGymMember(gymId) && request.resource.data.memberId == request.auth.uid;
         allow update: if isGymAdmin(gymId) || (isGymMember(gymId) && resource.data.status == 'not_paid' && request.resource.data.status == 'pending');
+        allow delete: if isGymAdmin(gymId);
+      }
+      
+      match /attendance_months/{monthId} {
+        allow read, write: if isGymAdmin(gymId) || isGymMember(gymId);
+        match /records/{memberId} {
+          allow read, write: if isGymAdmin(gymId) || isGymMember(gymId);
+        }
       }
       
       match /members/{memberId} {

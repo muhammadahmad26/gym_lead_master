@@ -5,6 +5,7 @@ import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_pa
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/attendance/attendance_month_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/attendance/member_detail_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/gym_member_page.dart';
+import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/pending_approvals_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/chat_page/chat_screen.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/message_page/data/model/messages_model.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/notifications/admin_notifications_screen.dart';
@@ -125,6 +126,14 @@ class AppRouter {
           return MaterialPageRoute(
             builder:
                 (_) => CreateNotificationScreen(gymId: args['gymId']),
+          );
+        }
+      case AppRoutes.pendingApprovalsPage:
+        {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder:
+                (_) => PendingApprovalsScreen(gymId: args['gymId']),
           );
         }
       default:

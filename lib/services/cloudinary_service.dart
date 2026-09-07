@@ -31,20 +31,20 @@ class CloudinaryService {
         final String? imageUrl = data['secure_url'] as String?;
 
         if (imageUrl != null) {
-          debugPrint("✅ Cloudinary Upload Success: $imageUrl");
+          debugPrint("Cloudinary Upload Success: $imageUrl");
           return imageUrl;
         } else {
-          debugPrint("❌ URL not found in response: $responseString");
+          debugPrint("URL not found in response: $responseString");
           return null;
         }
       } else {
         debugPrint(
-          "❌ Cloudinary Upload Failed: ${response.statusCode} — $responseString",
+          "Cloudinary Upload Failed: ${response.statusCode} — $responseString",
         );
         return null;
       }
     } catch (e) {
-      debugPrint("❌ Cloudinary Error: $e");
+      debugPrint("Cloudinary Error: $e");
       return null;
     }
 }

@@ -7,7 +7,17 @@ import 'package:gym_lead_master/src/data/models/attendance_model.dart';
 import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/attendance/member_attendance_tab.dart';
 import 'package:intl/intl.dart';
 
-class MemberDetailScreen extends StatelessWidget {
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:gym_lead_master/services/database_service.dart';
+import 'package:gym_lead_master/src/core/constants/appColor.dart';
+import 'package:gym_lead_master/src/data/models/attendance_model.dart';
+import 'package:gym_lead_master/src/presentation/pages/admin_pages/admin_home_page/attendance/member_attendance_tab.dart';
+import 'package:intl/intl.dart';
+
+class MemberDetailScreen extends StatefulWidget {
   final String gymId;
   final Map<String, dynamic> memberData;
 
@@ -18,18 +28,85 @@ class MemberDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<MemberDetailScreen> createState() => _MemberDetailScreenState();
+}
+
+class _MemberDetailScreenState extends State<MemberDetailScreen> {
+  final DatabaseService _dbService = DatabaseService();
+  bool _isDeleting = false;
+
+  Future<void> _confirmAndDelete() async {
+    String name = widget.memberData['name'] ?? 'this member';
+    String uid = widget.memberData['uid'] ?? '';
+
+    bool? confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text("Delete Member?"),
+            content: Text(
+              "$name will be permanently removed from your gym, along with all their payment history, attendance records, and notifications. They will no longer be able to log in. This cannot be undone.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text(
+                  "Delete",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm != true || uid.isEmpty) return;
+
+    setState(() => _isDeleting = true);
+    try {
+      await _dbService.deleteMemberCompletely(widget.gymId, uid);
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("$name has been removed."),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDeleting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Couldn't delete member: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    String name = memberData['name'] ?? 'Unknown';
-    String email = memberData['email'] ?? '';
-    String role = memberData['role'] ?? 'member';
-    String location = memberData['location'] ?? '';
-    String mStatus = memberData['membershipStatus'] ?? 'not_paid';
-    String? profileBase64 = memberData['profileImageBase64'];
-    String uid = memberData['uid'] ?? '';
+    String name = widget.memberData['name'] ?? 'Unknown';
+    String email = widget.memberData['email'] ?? '';
+    String role = widget.memberData['role'] ?? 'member';
+    String location = widget.memberData['location'] ?? '';
+    String mStatus = widget.memberData['membershipStatus'] ?? 'not_paid';
+    String? profileBase64 = widget.memberData['profileImageBase64'];
+    String uid = widget.memberData['uid'] ?? '';
 
     String joinDateStr = "N/A";
-    if (memberData['joinDate'] != null) {
-      DateTime dt = (memberData['joinDate'] as Timestamp).toDate();
+    if (widget.memberData['joinDate'] != null) {
+      DateTime dt = (widget.memberData['joinDate'] as Timestamp).toDate();
       joinDateStr = DateFormat('dd MMM yyyy').format(dt);
     }
 
@@ -47,6 +124,26 @@ class MemberDetailScreen extends StatelessWidget {
           ),
           backgroundColor: AppColors.DarkBlueGrey,
           iconTheme: const IconThemeData(color: Colors.white),
+          actions: [
+            if (_isDeleting)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+              )
+            else
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                tooltip: "Delete Member",
+                onPressed: _confirmAndDelete,
+              ),
+          ],
           bottom: const TabBar(
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
@@ -65,7 +162,7 @@ class MemberDetailScreen extends StatelessWidget {
               profileBase64,
               joinDateStr,
             ),
-            MemberAttendanceTab(gymId: gymId, memberId: uid, memberName: name),
+            MemberAttendanceTab(gymId: widget.gymId, memberId: uid, memberName: name),
           ],
         ),
       ),
@@ -111,8 +208,8 @@ class MemberDetailScreen extends StatelessWidget {
             child: Column(
               children: [
                 _buildProfileAvatar(
-  imageUrl: memberData['profileImageUrl'] ?? '',
-  base64Image: memberData['profileImageBase64'] ?? '',
+  imageUrl:widget.memberData['profileImageUrl'] ?? '',
+  base64Image: widget.memberData['profileImageBase64'] ?? '',
 ),
                 const SizedBox(height: 12),
                 Text(

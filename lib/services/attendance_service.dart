@@ -6,11 +6,7 @@ import 'package:gym_lead_master/src/data/models/attendance_model.dart';
 class AttendanceService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // ==========================================
-  // RECORD ATTENDANCE (Called from Check-In)
-  // ==========================================
 
-  /// Auto-record attendance when member checks in
   Future<void> recordAttendance({
     required String gymId,
     required String memberId,
@@ -32,7 +28,7 @@ class AttendanceService {
           .collection('records')
           .doc(memberId);
 
-      // STEP 1: Ensure month document exists
+     
       DocumentSnapshot monthDoc = await monthRef.get();
       if (!monthDoc.exists) {
         await monthRef.set({
@@ -106,9 +102,7 @@ class AttendanceService {
         .snapshots();
   }
 
-  // ==========================================
-  // GET MONTH RECORDS (All members for a month)
-  // ==========================================
+ 
 
   Future<List<MemberAttendanceModel>> getMonthRecords(
     String gymId,

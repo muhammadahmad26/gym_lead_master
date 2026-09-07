@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,7 +11,6 @@ import 'package:gym_lead_master/src/data/models/membership_plan_model.dart';
 import 'package:gym_lead_master/src/data/models/payment_model.dart';
 import 'package:gym_lead_master/src/data/models/transaction_model.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
@@ -169,12 +167,14 @@ class _MemberPaymentScreenState extends State<MemberPaymentScreen>
     //  Convert bytes to XFile and Upload to Cloudinary
     setState(() { _loadingMessage = "Uploading to cloud..."; _uploadProgress = 0.5; });
 
-     
-      // Create a temporary XFile from bytes
-    String tempPath = (await getTemporaryDirectory()).path + '/payment_screenshot.jpg';
-    File tempFile = File(tempPath);
-    await tempFile.writeAsBytes(_imageBytes!);
-    XFile imageFile = XFile(tempPath);
+    // Build the XFile straight from the in-memory bytes — no filesystem
+    // round-trip needed, which also means this works on web (where
+    // dart:io/path_provider temp files aren't available).
+    XFile imageFile = XFile.fromData(
+      _imageBytes!,
+      name: 'payment_screenshot.jpg',
+      mimeType: 'image/jpeg',
+    );
     
     String? screenshotUrl = await CloudinaryService().uploadImage(imageFile);
     

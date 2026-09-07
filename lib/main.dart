@@ -9,7 +9,6 @@ import 'package:gym_lead_master/src/presentation/pages/common/profile_page/profi
 import 'package:gym_lead_master/src/presentation/pages/common/signUp_page.dart';
 
 import 'package:gym_lead_master/src/presentation/pages/splash_page/initial_pages.dart';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -52,9 +51,9 @@ void main() async {
 //     await FirebaseAuth.instance.useAuthEmulator(host, 9099);
 //     FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
 //     await FirebaseStorage.instance.useStorageEmulator(host, 9199);
-//     print("Connected to Firebase Emulator on: $host");
+//     debugPrint("Connected to Firebase Emulator on: $host");
 //   } catch (e) {
-//     print("Emulator connection error: $e");
+//     debugPrint("Emulator connection error: $e");
 //   }
 // }
 
@@ -72,6 +71,43 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       onGenerateRoute: AppRouter.generateRoute,
+      builder: (context, child) {
+        // This app is designed for phone-width screens. On the web build,
+        // a wide desktop/laptop browser window would otherwise stretch
+        // every Row/layout far beyond what it was designed for, causing
+        // overflow and odd spacing. Keep it phone-width and centered on
+        // wide screens instead — the same pattern WhatsApp Web etc. use.
+        if (!kIsWeb) return child!;
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            const double maxPhoneWidth = 480;
+            double effectiveWidth =
+                constraints.maxWidth < maxPhoneWidth
+                    ? constraints.maxWidth
+                    : maxPhoneWidth;
+
+            return Container(
+              color: const Color(0xFFEDEDED),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: maxPhoneWidth),
+                  child: MediaQuery(
+                    // Also override the reported size, so any screen doing
+                    // its own MediaQuery.of(context).size.width math (chat
+                    // bubble widths, responsive helpers) sees the phone
+                    // width too, not the raw browser window width.
+                    data: MediaQuery.of(context).copyWith(
+                      size: Size(effectiveWidth, constraints.maxHeight),
+                    ),
+                    child: Material(elevation: 8, child: child),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -105,6 +105,8 @@ class AuthService {
               'role': role,
               'joinDate': FieldValue.serverTimestamp(),
               'membershipStatus': 'not_paid',
+              'approvalStatus': 'pending',
+              'membershipExpiresAt': null,
               'lastVisit': null,
               'gymId': gymId,
               'profileImageUrl': '',

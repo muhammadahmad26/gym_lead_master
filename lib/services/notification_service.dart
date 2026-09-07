@@ -12,8 +12,7 @@ class NotificationService {
   // ADMIN: CRUD OPERATIONS
   // ==========================================
 
-  /// Send Notification to Members
-  /// Stores gymNotifId in member notifications for cascade delete
+
   Future<void> sendNotificationToMembers({
     required String gymId,
     required String title,
@@ -94,8 +93,7 @@ class NotificationService {
     }
   }
 
-  // FIX: Only orderBy — NO where clause = NO composite index needed
-  // Filter isDeleted CLIENT-SIDE (same pattern as DatabaseService payments)
+
   Stream<QuerySnapshot> getAdminNotifications(String gymId) {
     return _firestore
         .collection('gyms')

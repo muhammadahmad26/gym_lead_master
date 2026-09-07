@@ -85,6 +85,39 @@ class _LoginPageState extends State<LoginPage> {
               "Access Denied! Admins cannot login on Member side.",
             );
           }
+
+          // 4. Members need admin approval before they can log in. The
+          // approval status lives on the member record (gyms/{gymId}/
+          // members/{uid}) — that's the doc an admin can actually write
+          // to (see firestore.rules), so it's the source of truth here.
+          String? memberGymId =
+              (userDoc.data() as Map<String, dynamic>)['gymId'];
+          if (memberGymId != null) {
+            DocumentSnapshot memberDoc =
+                await FirebaseFirestore.instance
+                    .collection('gyms')
+                    .doc(memberGymId)
+                    .collection('members')
+                    .doc(credential.user!.uid)
+                    .get();
+
+            if (!memberDoc.exists) {
+              await FirebaseAuth.instance.signOut();
+              throw Exception(
+                "Your account was not found. It may have been removed by your gym admin.",
+              );
+            }
+
+            String approvalStatus =
+                (memberDoc.data() as Map<String, dynamic>?)?['approvalStatus'] ??
+                'approved'; // legacy members created before this feature
+            if (approvalStatus == 'pending') {
+              await FirebaseAuth.instance.signOut();
+              throw Exception(
+                "Your signup is still pending admin approval. Please wait for approval before logging in.",
+              );
+            }
+          }
         }
       } else {
         await FirebaseAuth.instance.signOut();

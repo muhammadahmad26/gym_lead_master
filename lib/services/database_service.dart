@@ -146,7 +146,7 @@ class DatabaseService {
           memberEmail: memberEmail,
         );
       } catch (e) {
-        debugPrint("⚠️ Attendance recording failed (check-in still saved): $e");
+        debugPrint("Attendance recording failed (check-in still saved): $e");
       }
 
       return "success";
@@ -260,8 +260,7 @@ class DatabaseService {
   // PAYMENT TRANSACTIONS (FIXED)
   // ==========================================
 
-  ///  FIX: Single where clause to avoid composite index requirement
-  /// Get all payments for a member, then filter client-side
+  
   Future<QuerySnapshot> getMemberPayments(String gymId, String memberId) {
     return _firestore
         .collection('gyms')
@@ -307,7 +306,7 @@ class DatabaseService {
         var data = doc.data() as Map<String, dynamic>;
         String status = data['status'] ?? '';
         if (status == 'pending') {
-          debugPrint("⚠️ Member has PENDING payment. Cannot create new.");
+          debugPrint("Member has PENDING payment. Cannot create new.");
           return null; // Signal that payment is already pending
         }
       }
@@ -325,7 +324,7 @@ class DatabaseService {
           memberEmail = userDoc.data()?['email'] ?? '';
         }
       } catch (e) {
-        debugPrint("⚠️ Could not fetch user details: $e");
+        debugPrint("Could not fetch user details: $e");
       }
 
       DocumentReference newDocRef = await _firestore
@@ -434,12 +433,39 @@ class DatabaseService {
   }
 
   /// Admin Approves Payment
+  /// Also computes and stores when the membership expires, based on the
+  /// plan's duration, so the member can't submit another payment until
+  /// that period runs out.
   Future<void> approvePayment(
     String gymId,
     String paymentId,
     String memberId,
   ) async {
     String adminUid = FirebaseAuth.instance.currentUser!.uid;
+
+    DocumentSnapshot paymentDoc =
+        await _firestore
+            .collection('gyms')
+            .doc(gymId)
+            .collection('payments')
+            .doc(paymentId)
+            .get();
+    String duration =
+        (paymentDoc.data() as Map<String, dynamic>?)?['duration'] ??
+        'Monthly';
+
+    DateTime now = DateTime.now();
+    DateTime expiresAt;
+    switch (duration) {
+      case 'Yearly':
+        expiresAt = DateTime(now.year + 1, now.month, now.day);
+        break;
+      case 'Quarterly':
+        expiresAt = DateTime(now.year, now.month + 3, now.day);
+        break;
+      default: // Monthly
+        expiresAt = DateTime(now.year, now.month + 1, now.day);
+    }
 
     await _firestore
         .collection('gyms')
@@ -457,7 +483,108 @@ class DatabaseService {
         .doc(gymId)
         .collection('members')
         .doc(memberId)
-        .update({'membershipStatus': 'active'});
+        .update({
+          'membershipStatus': 'active',
+          'membershipExpiresAt': Timestamp.fromDate(expiresAt),
+        });
+  }
+
+  // ==========================================
+  // MEMBER SIGNUP APPROVAL WORKFLOW
+  // ==========================================
+
+  Stream<QuerySnapshot> getPendingApprovalMembers(String gymId) {
+    return _firestore
+        .collection('gyms')
+        .doc(gymId)
+        .collection('members')
+        .where('approvalStatus', isEqualTo: 'pending')
+        .snapshots();
+  }
+
+  Future<void> approveMemberSignup(String gymId, String memberId) async {
+    await _firestore
+        .collection('gyms')
+        .doc(gymId)
+        .collection('members')
+        .doc(memberId)
+        .update({'approvalStatus': 'approved'});
+  }
+
+  
+  Future<void> deleteMemberCompletely(String gymId, String memberId) async {
+    // 1. Delete this member's payment history.
+    try {
+      QuerySnapshot payments =
+          await _firestore
+              .collection('gyms')
+              .doc(gymId)
+              .collection('payments')
+              .where('memberId', isEqualTo: memberId)
+              .get();
+      for (var doc in payments.docs) {
+        await doc.reference.delete();
+      }
+    } catch (e) {
+      debugPrint("Could not delete payments for $memberId: $e");
+    }
+
+    // 2. Delete this member's attendance records across all months.
+    try {
+      QuerySnapshot months =
+          await _firestore
+              .collection('gyms')
+              .doc(gymId)
+              .collection('attendance_months')
+              .get();
+      for (var monthDoc in months.docs) {
+        DocumentReference recordRef = monthDoc.reference
+            .collection('records')
+            .doc(memberId);
+        DocumentSnapshot recordSnap = await recordRef.get();
+        if (recordSnap.exists) {
+          await recordRef.delete();
+        }
+      }
+    } catch (e) {
+      debugPrint("Could not delete attendance for $memberId: $e");
+    }
+
+    // 3. Delete this member's personal notifications.
+    try {
+      QuerySnapshot notifs =
+          await _firestore
+              .collection('users')
+              .doc(memberId)
+              .collection('notifications')
+              .get();
+      for (var doc in notifs.docs) {
+        await doc.reference.delete();
+      }
+    } catch (e) {
+      debugPrint("Could not delete notifications for $memberId: $e");
+    }
+
+
+    await _firestore
+        .collection('gyms')
+        .doc(gymId)
+        .collection('members')
+        .doc(memberId)
+        .delete();
+  }
+
+  // ==========================================
+  // MEMBERSHIP EXPIRY
+  // ==========================================
+
+  Stream<DocumentSnapshot> getMemberDocStream(String gymId, String memberId) {
+    return _firestore
+        .collection('gyms')
+        .doc(gymId)
+        .collection('members')
+        .doc(memberId)
+        .snapshots();
   }
 
   /// Admin Rejects Payment
@@ -520,7 +647,6 @@ class DatabaseService {
     });
   }
 
-  // OLD METHOD - kept for profile page compatibility
   Future<void> updatePaymentSettings(
     String gymId,
     Map<String, dynamic> settings,

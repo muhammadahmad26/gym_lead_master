@@ -27,7 +27,7 @@ class AppBackGroundPage extends StatelessWidget {
             ],
           ),
         ),
-        child: child,
+        child: SafeArea(child: child),
       ),
     );
   }

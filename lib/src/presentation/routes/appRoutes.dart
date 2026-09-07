@@ -28,4 +28,5 @@ class AppRoutes {
   static const String memberDetailPage = "/member_detail";
   static const String chatDetailPage = "/chat_detail";
   static const String createNotificationPage = "/create_notification";
+  static const String pendingApprovalsPage = "/pending_approvals";
 }
