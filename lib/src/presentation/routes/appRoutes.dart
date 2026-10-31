@@ -1,6 +1,6 @@
 class AppRoutes {
   static const String initialPage = '/';
-  static const String loginChooserPage = '/login_chooser';
+  static const String loginChooserPage = '/login_chooser'; 
   static const String gymAdminLogInPage = '/gym_admin';
   static const String gymMemberLoginPage = "./login_page";
   static const String gymAdminSignUpPage = "./SignUp_gym_admin";

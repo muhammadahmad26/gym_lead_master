@@ -9,14 +9,14 @@ class CreateNotificationScreen extends StatefulWidget {
   const CreateNotificationScreen({super.key, required this.gymId});
 
   @override
-  State<CreateNotificationScreen> createState() => _CreateNotificationScreenState();
+  State<CreateNotificationScreen> createState() =>
+      _CreateNotificationScreenState();
 }
 
 class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleCtrl = TextEditingController();
   final TextEditingController _msgCtrl = TextEditingController();
-
 
   NotificationType _selectedType = NotificationType.general;
   String _sendTo = 'all'; // 'all' or specific userIds
@@ -48,12 +48,19 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Notification Sent!"), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Notification Sent!"),
+            backgroundColor: Colors.green,
+          ),
+        );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
       }
     } finally {
       if (mounted) setState(() => _isSending = false);
@@ -63,7 +70,16 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Create Notification",style: TextStyle(color: AppColors.whiteColor),), backgroundColor: AppColors.DarkBlueGrey),
+      appBar: AppBar(
+        iconTheme: const IconThemeData(
+          color: Colors.white, // Back arrow color
+        ),
+        title: const Text(
+          "Create Notification",
+          style: TextStyle(color: AppColors.whiteColor),
+        ),
+        backgroundColor: AppColors.DarkBlueGrey,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -71,19 +87,32 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(controller: _titleCtrl, validator: (v) => v!.isEmpty ? "Required" : null, decoration: const InputDecoration(labelText: "Title", border: OutlineInputBorder())),
+              TextFormField(
+                controller: _titleCtrl,
+                validator: (v) => v!.isEmpty ? "Required" : null,
+                decoration: const InputDecoration(
+                  labelText: "Title",
+                  border: OutlineInputBorder(),
+                ),
+              ),
               const SizedBox(height: 16),
-              TextFormField(controller: _msgCtrl, validator: (v) => v!.isEmpty ? "Required" : null, maxLines: 4, decoration: const InputDecoration(labelText: "Message", border: OutlineInputBorder())),
+              TextFormField(
+                controller: _msgCtrl,
+                validator: (v) => v!.isEmpty ? "Required" : null,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: "Message",
+                  border: OutlineInputBorder(),
+                ),
+              ),
               const SizedBox(height: 16),
 
-             
               _NotificationTypeDropdown(
                 initialType: _selectedType,
                 onChanged: (val) => _selectedType = val,
               ),
               const SizedBox(height: 16),
 
-              
               _SendToSelector(
                 gymId: widget.gymId,
                 onChanged: (sendTo, selectedUserIds) {
@@ -98,12 +127,19 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _isSending ? null : _sendNotification,
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.blueColor, padding: const EdgeInsets.all(14)),
-                  child: _isSending
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("SEND NOTIFICATION", style: TextStyle(color: Colors.white, fontSize: 16)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.blueColor,
+                    padding: const EdgeInsets.all(14),
+                  ),
+                  child:
+                      _isSending
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                            "SEND NOTIFICATION",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -111,7 +147,6 @@ class _CreateNotificationScreenState extends State<CreateNotificationScreen> {
     );
   }
 }
-
 
 class _NotificationTypeDropdown extends StatefulWidget {
   final NotificationType initialType;
@@ -123,7 +158,8 @@ class _NotificationTypeDropdown extends StatefulWidget {
   });
 
   @override
-  State<_NotificationTypeDropdown> createState() => _NotificationTypeDropdownState();
+  State<_NotificationTypeDropdown> createState() =>
+      _NotificationTypeDropdownState();
 }
 
 class _NotificationTypeDropdownState extends State<_NotificationTypeDropdown> {
@@ -133,25 +169,30 @@ class _NotificationTypeDropdownState extends State<_NotificationTypeDropdown> {
   Widget build(BuildContext context) {
     return DropdownButtonFormField<NotificationType>(
       value: _selectedType,
-      items: NotificationType.values.map((type) => DropdownMenuItem(value: type, child: Text(type.label))).toList(),
+      items:
+          NotificationType.values
+              .map(
+                (type) =>
+                    DropdownMenuItem(value: type, child: Text(type.label)),
+              )
+              .toList(),
       onChanged: (val) {
         setState(() => _selectedType = val!);
         widget.onChanged(val!);
       },
-      decoration: const InputDecoration(labelText: "Notification Type", border: OutlineInputBorder()),
+      decoration: const InputDecoration(
+        labelText: "Notification Type",
+        border: OutlineInputBorder(),
+      ),
     );
   }
 }
-
 
 class _SendToSelector extends StatefulWidget {
   final String gymId;
   final void Function(String sendTo, List<String> selectedUserIds) onChanged;
 
-  const _SendToSelector({
-    required this.gymId,
-    required this.onChanged,
-  });
+  const _SendToSelector({required this.gymId, required this.onChanged});
 
   @override
   State<_SendToSelector> createState() => _SendToSelectorState();
@@ -198,9 +239,15 @@ class _SendToSelectorState extends State<_SendToSelector> {
     return SizedBox(
       height: 150,
       child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('gyms').doc(widget.gymId).collection('members').snapshots(),
+        stream:
+            FirebaseFirestore.instance
+                .collection('gyms')
+                .doc(widget.gymId)
+                .collection('members')
+                .snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData)
+            return const Center(child: CircularProgressIndicator());
           var members = snapshot.data!.docs;
 
           return ListView.builder(

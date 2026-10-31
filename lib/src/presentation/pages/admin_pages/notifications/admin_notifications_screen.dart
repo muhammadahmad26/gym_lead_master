@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -39,10 +38,11 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
       } else {
         String? uid = FirebaseAuth.instance.currentUser?.uid;
         if (uid != null) {
-          var doc = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(uid)
-              .get();
+          var doc =
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(uid)
+                  .get();
           if (doc.exists) {
             String dbGymId = doc.data()!['gymId'] ?? '';
             if (dbGymId.isNotEmpty) {
@@ -75,8 +75,13 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Sent Notifications",
-            style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(
+          color: Colors.white, // Back arrow color
+        ),
+        title: const Text(
+          "Send Notifications",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: AppColors.DarkBlueGrey,
         actions: [
           IconButton(
@@ -94,6 +99,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
         onPressed: () {
           Navigator.pushNamed(
             context,
+
             AppRoutes.createNotificationPage,
             arguments: {'gymId': _gymId},
           );
@@ -134,17 +140,20 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
         }
 
         // CLIENT-SIDE FILTER: Remove deleted notifications
-        var activeDocs = snapshot.data!.docs.where((doc) {
-          var data = doc.data() as Map<String, dynamic>;
-          return data['isDeleted'] != true;
-        }).toList();
+        var activeDocs =
+            snapshot.data!.docs.where((doc) {
+              var data = doc.data() as Map<String, dynamic>;
+              return data['isDeleted'] != true;
+            }).toList();
 
         if (activeDocs.isEmpty) {
           return _buildEmptyState();
         }
 
         var notifs =
-            activeDocs.map((doc) => AppNotification.fromFirestore(doc)).toList();
+            activeDocs
+                .map((doc) => AppNotification.fromFirestore(doc))
+                .toList();
 
         return RefreshIndicator(
           onRefresh: () async => setState(() {}),
@@ -184,8 +193,11 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
                       CircleAvatar(
                         radius: 20,
                         backgroundColor: notif.type.color.withOpacity(0.15),
-                        child: Icon(notif.type.icon,
-                            color: notif.type.color, size: 20),
+                        child: Icon(
+                          notif.type.icon,
+                          color: notif.type.color,
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -206,7 +218,9 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
                               children: [
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: notif.type.color.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
@@ -241,8 +255,10 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
                         notif.createdAt != null
                             ? timeago.format(notif.createdAt!)
                             : "Just now",
-                        style:
-                            const TextStyle(fontSize: 11, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -299,86 +315,101 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
   void _showDeleteDialog(AppNotification notif) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.delete_outline, color: Colors.red[700], size: 28),
-            const SizedBox(width: 10),
-            const Expanded(child: Text("Delete Notification?")),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "This notification will be removed from:",
-              style: TextStyle(fontWeight: FontWeight.w600),
+      builder:
+          (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-            const SizedBox(height: 8),
-            Row(
+            title: Row(
               children: [
-                const Icon(Icons.admin_panel_settings,
-                    size: 16, color: AppColors.DarkBlueGrey),
-                const SizedBox(width: 6),
-                const Expanded(child: Text("Your admin dashboard")),
+                Icon(Icons.delete_outline, color: Colors.red[700], size: 28),
+                const SizedBox(width: 10),
+                const Expanded(child: Text("Delete Notification?")),
               ],
             ),
-            const SizedBox(height: 4),
-            Row(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.people, size: 16, color: AppColors.blueColor),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text("All ${notif.targetCount} member devices"),
+                const Text(
+                  "This notification will be removed from:",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.admin_panel_settings,
+                      size: 16,
+                      color: AppColors.DarkBlueGrey,
+                    ),
+                    const SizedBox(width: 6),
+                    const Expanded(child: Text("Your admin dashboard")),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.people,
+                      size: 16,
+                      color: AppColors.blueColor,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text("All ${notif.targetCount} member devices"),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: Colors.orange[700],
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          "This action can be undone from the database if needed.",
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.orange[700],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text("Cancel"),
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, size: 16, color: Colors.orange[700]),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      "This action can be undone from the database if needed.",
-                      style:
-                          TextStyle(fontSize: 11, color: Colors.orange[700]),
-                    ),
-                  ),
-                ],
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _performDelete(notif);
+                },
+                icon: const Icon(Icons.delete, size: 18),
+                label: const Text("Delete for Everyone"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
               ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel"),
+            ],
           ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _performDelete(notif);
-            },
-            icon: const Icon(Icons.delete, size: 18),
-            label: const Text("Delete for Everyone"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -418,21 +449,24 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
   Future<void> _runMigration() async {
     bool? confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Sync Old Notifications?"),
-        content: const Text(
-          "This will add required fields to old notifications "
-          "so they appear correctly. Run this only once.",
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text("Cancel")),
-          ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text("Run Sync")),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text("Sync Old Notifications?"),
+            content: const Text(
+              "This will add required fields to old notifications "
+              "so they appear correctly. Run this only once.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text("Run Sync"),
+              ),
+            ],
+          ),
     );
 
     if (confirm != true) return;
@@ -440,15 +474,16 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => const AlertDialog(
-        content: Row(
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 16),
-            Text("Syncing notifications..."),
-          ],
-        ),
-      ),
+      builder:
+          (ctx) => const AlertDialog(
+            content: Row(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 16),
+                Text("Syncing notifications..."),
+              ],
+            ),
+          ),
     );
 
     try {
@@ -482,8 +517,11 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.notifications_off_outlined,
-                size: 80, color: Colors.grey[300]),
+            Icon(
+              Icons.notifications_off_outlined,
+              size: 80,
+              color: Colors.grey[300],
+            ),
             const SizedBox(height: 16),
             const Text(
               "No Sent Notifications Yet",
